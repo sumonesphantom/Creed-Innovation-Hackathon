@@ -54,20 +54,18 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
     }
 
     return (
-        <div
-            className={`flex items-center gap-2 ${collapsed ? "justify-center" : "px-1"}`}
-        >
+        <div className={`flex items-center gap-2.5 ${collapsed ? "justify-center" : "px-1"}`}>
             {user.picture ? (
                 <Image
                     src={user.picture}
                     alt=""
-                    width={28}
-                    height={28}
-                    className="w-7 h-7 rounded-full shrink-0"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full shrink-0 ring-2 ring-primary/20"
                     referrerPolicy="no-referrer"
                 />
             ) : (
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary/30 to-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/20">
                     <span className="text-xs font-bold text-primary">
                         {user.name?.charAt(0)?.toUpperCase() || "U"}
                     </span>
@@ -75,21 +73,16 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
             )}
             {!collapsed && (
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground truncate">
-                        {user.name}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground truncate">
-                        {user.email}
-                    </p>
+                    <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
                 </div>
             )}
             {!collapsed && (
                 <a
                     href="/auth/logout"
-                    className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     title="Sign out"
                     onClick={() => {
-                        // Clear authenticated user's chat cache on logout
                         if (user?.sub) {
                             localStorage.removeItem(`shockplan_buddy_messages_${user.sub}`);
                         }
@@ -102,18 +95,12 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
     );
 }
 
-function SidebarContent({
-    pathname,
-    collapsed,
-}: {
-    pathname: string;
-    collapsed?: boolean;
-}) {
+function SidebarContent({ pathname, collapsed }: { pathname: string; collapsed?: boolean }) {
     return (
         <>
             {/* Logo */}
             <div className="flex items-center gap-2.5 px-4 py-5">
-                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary shadow-sm shrink-0">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-linear-to-br from-primary to-primary/70 shadow-md shrink-0">
                     <Shield className="h-5 w-5 text-primary-foreground" />
                 </div>
                 {!collapsed && (
@@ -124,29 +111,45 @@ function SidebarContent({
             </div>
 
             {/* Nav links */}
-            <nav className="flex-1 flex flex-col gap-1 px-3 mt-2">
+            <nav className="flex-1 flex flex-col gap-0.5 px-3 mt-1">
                 {navItems.map(({ label, href, icon: Icon }) => {
                     const isActive = pathname === href;
+                    const isCrisis = href === "/crisis";
                     return (
                         <Link
                             key={href}
                             href={href}
                             className={[
-                                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                                isActive
-                                    ? "bg-primary/10 text-primary"
-                                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                                isActive && isCrisis
+                                    ? "bg-destructive/10 text-destructive font-semibold"
+                                    : isActive
+                                      ? "bg-primary/10 text-primary font-semibold"
+                                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                             ].join(" ")}
                         >
-                            <Icon className="h-5 w-5 shrink-0" />
+                            <Icon
+                                className={[
+                                    "h-4.5 w-4.5 shrink-0",
+                                    isActive && isCrisis
+                                        ? "stroke-[2.2px]"
+                                        : isActive
+                                          ? "stroke-[2.2px]"
+                                          : "stroke-[1.7px]",
+                                ].join(" ")}
+                                size={18}
+                            />
                             {!collapsed && <span>{label}</span>}
+                            {isActive && !collapsed && (
+                                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                            )}
                         </Link>
                     );
                 })}
             </nav>
 
             {/* Footer */}
-            <div className="px-3 pb-4 space-y-3">
+            <div className="px-3 pb-4 pt-3 space-y-3 border-t border-border/50 mt-2">
                 <UserSection collapsed={collapsed} />
                 <div className="flex items-center justify-between">
                     <ThemeToggle collapsed={collapsed} />
@@ -166,7 +169,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
             aria-label="Main navigation"
             className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
         >
-            <div className="bg-card border-t border-border backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)]">
+            <div className="bg-card/95 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom,0px)]">
                 <ul
                     className="flex flex-nowrap items-stretch min-h-16 overflow-x-auto overflow-y-hidden overscroll-x-contain [-webkit-overflow-scrolling:touch] px-1 gap-0.5"
                     role="list"
@@ -175,7 +178,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
                         const isActive = pathname === href;
                         const isCrisis = href === "/crisis";
                         return (
-                            <li key={href} className="flex-shrink-0 w-[4.5rem] sm:w-[4.75rem]">
+                            <li key={href} className="shrink-0 w-18 sm:w-19">
                                 <Link
                                     href={href}
                                     aria-current={isActive ? "page" : undefined}
@@ -214,6 +217,11 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
                                     >
                                         {label}
                                     </span>
+                                    {isActive && (
+                                        <span
+                                            className={`w-1 h-1 rounded-full ${isCrisis ? "bg-destructive" : "bg-primary"}`}
+                                        />
+                                    )}
                                 </Link>
                             </li>
                         );
@@ -231,7 +239,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex min-h-screen bg-background">
             {/* Desktop sidebar */}
-            <aside className="hidden lg:flex lg:flex-col lg:w-60 xl:w-64 border-r border-border bg-card/50 backdrop-blur-sm sticky top-0 h-screen shrink-0">
+            <aside className="hidden lg:flex lg:flex-col lg:w-60 xl:w-64 border-r border-border bg-linear-to-b from-card to-card/80 backdrop-blur-sm sticky top-0 h-screen shrink-0">
                 <SidebarContent pathname={pathname} />
             </aside>
 
@@ -239,13 +247,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {mobileMenuOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden">
                     <div
-                        className="absolute inset-0 bg-black/40"
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                         onClick={() => setMobileMenuOpen(false)}
                     />
-                    <aside className="relative w-64 h-full bg-card flex flex-col shadow-xl">
+                    <aside className="relative w-64 h-full bg-card flex flex-col shadow-2xl">
                         <button
                             onClick={() => setMobileMenuOpen(false)}
-                            className="absolute top-4 right-3 p-1 text-muted-foreground hover:text-foreground"
+                            className="absolute top-4 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                         >
                             <X className="h-5 w-5" />
                         </button>
@@ -257,7 +265,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Main area */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Mobile top bar */}
-                <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-card/80 backdrop-blur-sm border-b border-border">
+                <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-card/90 backdrop-blur-md border-b border-border">
                     <div className="flex items-center gap-2.5">
                         <Button
                             variant="ghost"
@@ -268,7 +276,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             <Menu className="h-5 w-5" />
                         </Button>
                         <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary shadow-sm">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-linear-to-br from-primary to-primary/70 shadow-sm">
                                 <Shield className="h-4 w-4 text-primary-foreground" />
                             </div>
                             <span className="text-lg font-bold tracking-tight text-foreground">

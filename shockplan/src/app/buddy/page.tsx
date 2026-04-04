@@ -23,23 +23,25 @@ const QUICK_CHIPS = [
   "What government aid am I eligible for?",
 ];
 
-function BuddyAvatar() {
+function BuddyAvatar({ size = "md" }: { size?: "sm" | "md" }) {
+  const dim = size === "sm" ? "w-7 h-7" : "w-9 h-9";
+  const icon = size === "sm" ? "h-3.5 w-3.5" : "h-4.5 w-4.5";
   return (
-    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-      <Shield className="h-4 w-4 text-primary" />
+    <div className={`${dim} rounded-full bg-linear-to-br from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center shrink-0`}>
+      <Shield className={`${icon} text-primary`} />
     </div>
   );
 }
 
 function TypingIndicator() {
   return (
-    <div className="flex items-start gap-3">
-      <BuddyAvatar />
-      <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
+    <div className="flex items-end gap-2.5">
+      <BuddyAvatar size="sm" />
+      <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
         <div className="flex gap-1.5 items-center h-5">
-          <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
-          <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
-          <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
+          <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:0ms]" />
+          <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:150ms]" />
+          <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:300ms]" />
         </div>
       </div>
     </div>
@@ -50,21 +52,26 @@ function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
 
   return (
-    <div className={`flex items-start gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
-      {!isUser && <BuddyAvatar />}
-      <div
-        className={[
-          "max-w-[80%] lg:max-w-[60%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
-          isUser
-            ? "bg-primary text-primary-foreground rounded-tr-sm"
-            : "bg-card border border-border text-foreground rounded-tl-sm",
-        ].join(" ")}
-      >
-        {message.content.split("\n").map((line, i) => (
-          <p key={i} className={i > 0 ? "mt-2" : ""}>
-            {line}
-          </p>
-        ))}
+    <div className={`flex items-end gap-2.5 ${isUser ? "flex-row-reverse" : ""}`}>
+      {!isUser && <BuddyAvatar size="sm" />}
+      <div className="flex flex-col gap-1" style={{ alignItems: isUser ? "flex-end" : "flex-start", maxWidth: "80%" }}>
+        <div
+          className={[
+            "rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
+            isUser
+              ? "bg-linear-to-br from-primary to-primary/85 text-primary-foreground rounded-br-sm"
+              : "bg-card border border-border text-foreground rounded-bl-sm",
+          ].join(" ")}
+        >
+          {message.content.split("\n").map((line, i) => (
+            <p key={i} className={i > 0 ? "mt-2" : ""}>
+              {line}
+            </p>
+          ))}
+        </div>
+        <span className="text-[10px] text-muted-foreground/60 px-1">
+          {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </span>
       </div>
     </div>
   );
@@ -90,7 +97,6 @@ function BuddyChatInner() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [historyReady, setHistoryReady] = useState(false);
 
-  // Namespace by user so authenticated and anonymous sessions never share history
   const STORAGE_KEY = user?.sub
     ? `shockplan_buddy_messages_${user.sub}`
     : `shockplan_buddy_messages_anon_${localStorage.getItem("shockplan_device_id") || "unknown"}`;
@@ -98,9 +104,7 @@ function BuddyChatInner() {
   const saveToLocalStorage = (msgs: Message[]) => {
     try {
       const toSave = msgs.filter((m) => m.id !== "welcome");
-      if (toSave.length > 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-      }
+      if (toSave.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch {}
   };
 
@@ -122,14 +126,11 @@ function BuddyChatInner() {
     let cancelled = false;
     (async () => {
       const deviceId = typeof window !== "undefined" ? localStorage.getItem("shockplan_device_id") || "" : "";
-
-      // Load from localStorage immediately so history shows instantly
       const cached = loadFromLocalStorage();
       if (!cancelled && cached.length > 0) {
         setMessages(cached);
         setHistoryReady(true);
       }
-
       try {
         const res = await fetch(`/api/buddy?deviceId=${encodeURIComponent(deviceId)}`);
         const data = await res.json();
@@ -147,34 +148,18 @@ function BuddyChatInner() {
             setMessages(list);
             saveToLocalStorage(list);
           } else if (cached.length === 0) {
-            setMessages([
-              {
-                id: "welcome",
-                role: "buddy",
-                content: getWelcomeMessage(undefined),
-                timestamp: new Date(),
-              },
-            ]);
+            setMessages([{ id: "welcome", role: "buddy", content: getWelcomeMessage(undefined), timestamp: new Date() }]);
           }
         }
       } catch {
         if (!cancelled && cached.length === 0) {
-          setMessages([
-            {
-              id: "welcome",
-              role: "buddy",
-              content: getWelcomeMessage(undefined),
-              timestamp: new Date(),
-            },
-          ]);
+          setMessages([{ id: "welcome", role: "buddy", content: getWelcomeMessage(undefined), timestamp: new Date() }]);
         }
       } finally {
         if (!cancelled) setHistoryReady(true);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -188,18 +173,15 @@ function BuddyChatInner() {
       return [{ ...w, content: personalized }, ...prev.slice(1)];
     });
   }, [firstName]);
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
+  useEffect(() => { scrollToBottom(); }, [messages, isLoading]);
 
   const clearChat = async () => {
     if (isLoading || !historyReady) return;
@@ -210,18 +192,9 @@ function BuddyChatInner() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ deviceId }),
       });
-    } catch {
-      return;
-    }
+    } catch { return; }
     localStorage.removeItem(STORAGE_KEY);
-    setMessages([
-      {
-        id: "welcome",
-        role: "buddy",
-        content: getWelcomeMessage(firstName),
-        timestamp: new Date(),
-      },
-    ]);
+    setMessages([{ id: "welcome", role: "buddy", content: getWelcomeMessage(firstName), timestamp: new Date() }]);
   };
 
   const sendMessage = async (text: string) => {
@@ -238,51 +211,26 @@ function BuddyChatInner() {
     setInput("");
     setIsLoading(true);
 
-    // Auto-resize textarea back
-    if (inputRef.current) {
-      inputRef.current.style.height = "auto";
-    }
+    if (inputRef.current) inputRef.current.style.height = "auto";
 
     try {
       const deviceId = localStorage.getItem("shockplan_device_id") || "";
-
       const res = await fetch("/api/buddy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text.trim(),
-          deviceId,
-          crisisContext: crisisContextRef.current,
-        }),
+        body: JSON.stringify({ message: text.trim(), deviceId, crisisContext: crisisContextRef.current }),
       });
 
+      const fallbackMsg = "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.";
+
       if (!res.ok) {
-        const fallback =
-          "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.";
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `buddy-${Date.now()}`,
-            role: "buddy",
-            content: fallback,
-            timestamp: new Date(),
-          },
-        ]);
+        setMessages((prev) => [...prev, { id: `buddy-${Date.now()}`, role: "buddy", content: fallbackMsg, timestamp: new Date() }]);
         return;
       }
 
       const body = res.body;
       if (!body) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `buddy-${Date.now()}`,
-            role: "buddy",
-            content:
-              "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.",
-            timestamp: new Date(),
-          },
-        ]);
+        setMessages((prev) => [...prev, { id: `buddy-${Date.now()}`, role: "buddy", content: fallbackMsg, timestamp: new Date() }]);
         return;
       }
 
@@ -298,58 +246,22 @@ function BuddyChatInner() {
           accumulated += decoder.decode(value, { stream: true });
           if (!buddyId) {
             buddyId = `buddy-${Date.now()}`;
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: buddyId!,
-                role: "buddy",
-                content: accumulated,
-                timestamp: new Date(),
-              },
-            ]);
+            setMessages((prev) => [...prev, { id: buddyId!, role: "buddy", content: accumulated, timestamp: new Date() }]);
             setIsLoading(false);
           } else {
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === buddyId ? { ...m, content: accumulated } : m
-              )
-            );
+            setMessages((prev) => prev.map((m) => m.id === buddyId ? { ...m, content: accumulated } : m));
           }
         }
-        // Save to localStorage after stream completes
-        if (buddyId) {
-          setMessages((prev) => {
-            saveToLocalStorage(prev);
-            return prev;
-          });
-        }
+        if (buddyId) setMessages((prev) => { saveToLocalStorage(prev); return prev; });
       } finally {
         reader.releaseLock();
       }
 
       if (!buddyId) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `buddy-${Date.now()}`,
-            role: "buddy",
-            content:
-              "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.",
-            timestamp: new Date(),
-          },
-        ]);
+        setMessages((prev) => [...prev, { id: `buddy-${Date.now()}`, role: "buddy", content: fallbackMsg, timestamp: new Date() }]);
       }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `buddy-error-${Date.now()}`,
-          role: "buddy",
-          content:
-            "Something went wrong on my end. Please try again — I'm here for you.",
-          timestamp: new Date(),
-        },
-      ]);
+      setMessages((prev) => [...prev, { id: `buddy-error-${Date.now()}`, role: "buddy", content: "Something went wrong on my end. Please try again — I'm here for you.", timestamp: new Date() }]);
     } finally {
       setIsLoading(false);
     }
@@ -364,7 +276,6 @@ function BuddyChatInner() {
 
   const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
-    // Auto-resize
     e.target.style.height = "auto";
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
   };
@@ -375,13 +286,14 @@ function BuddyChatInner() {
     <AppShell>
       <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen">
         {/* Chat header */}
-        <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-border bg-card/50 backdrop-blur-sm">
+        <div className="px-4 sm:px-6 lg:px-8 py-3.5 border-b border-border bg-card/80 backdrop-blur-md">
           <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <BuddyAvatar />
               <div>
-                <h1 className="text-base font-bold text-foreground">ShockPlan Buddy</h1>
+                <h1 className="text-sm font-bold text-foreground">ShockPlan Buddy</h1>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                   <Sparkles className="h-3 w-3" />
                   AI-powered financial companion
                 </p>
@@ -391,13 +303,9 @@ function BuddyChatInner() {
               type="button"
               variant="outline"
               size="sm"
-              className="shrink-0 gap-1.5"
+              className="shrink-0 gap-1.5 rounded-xl h-8 text-xs"
               onClick={clearChat}
-              disabled={
-                !historyReady ||
-                isLoading ||
-                !messages.some((m) => m.id !== "welcome")
-              }
+              disabled={!historyReady || isLoading || !messages.some((m) => m.id !== "welcome")}
               title="Clear saved chat"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -407,10 +315,14 @@ function BuddyChatInner() {
         </div>
 
         {/* Messages area */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-3xl mx-auto space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 bg-muted/20">
+          <div className="max-w-3xl mx-auto space-y-5">
             {!historyReady ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Loading your chat…</p>
+              <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:0ms]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:150ms]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:300ms]" />
+              </div>
             ) : (
               messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
             )}
@@ -421,15 +333,15 @@ function BuddyChatInner() {
 
         {/* Quick action chips */}
         {showChips && (
-          <div className="px-4 sm:px-6 lg:px-8 pb-2">
+          <div className="px-4 sm:px-6 lg:px-8 pb-2 bg-card/80">
             <div className="max-w-3xl mx-auto">
-              <p className="text-xs font-medium text-muted-foreground mb-2">Try asking:</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Try asking:</p>
               <div className="flex flex-wrap gap-2">
                 {QUICK_CHIPS.map((chip) => (
                   <button
                     key={chip}
                     onClick={() => sendMessage(chip)}
-                    className="text-xs px-3 py-2 rounded-full border border-border bg-card hover:bg-accent text-foreground transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-full border border-border bg-card hover:bg-primary/5 hover:border-primary/30 text-foreground transition-all"
                   >
                     {chip}
                   </button>
@@ -440,17 +352,17 @@ function BuddyChatInner() {
         )}
 
         {/* Input area */}
-        <div className="px-4 sm:px-6 lg:px-8 py-4 border-t border-border bg-card/50 backdrop-blur-sm">
-          <div className="max-w-3xl mx-auto flex items-end gap-3">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 border-t border-border bg-card/90 backdrop-blur-md">
+          <div className="max-w-3xl mx-auto flex items-end gap-2.5">
             <div className="flex-1 relative">
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={handleTextareaInput}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your message..."
+                placeholder="Ask anything about your finances…"
                 rows={1}
-                className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                 disabled={isLoading || !historyReady}
               />
             </div>
@@ -458,7 +370,7 @@ function BuddyChatInner() {
               size="icon"
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isLoading || !historyReady}
-              className="rounded-xl h-11 w-11 shrink-0"
+              className="rounded-xl h-11 w-11 shrink-0 bg-linear-to-br from-primary to-primary/80 shadow-sm"
             >
               <Send className="h-4 w-4" />
             </Button>
@@ -477,7 +389,11 @@ export default function BuddyPage() {
     <Suspense
       fallback={
         <AppShell>
-          <div className="p-8 text-center text-muted-foreground">Loading…</div>
+          <div className="flex items-center justify-center h-screen gap-2 text-muted-foreground">
+            <div className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:0ms]" />
+            <div className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:150ms]" />
+            <div className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:300ms]" />
+          </div>
         </AppShell>
       }
     >

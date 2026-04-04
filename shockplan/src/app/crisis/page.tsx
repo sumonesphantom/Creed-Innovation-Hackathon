@@ -5,13 +5,11 @@ import Link from "next/link";
 import {
   Briefcase, Heart, Car, Home, CloudLightning,
   ChevronLeft, ChevronRight, MessageCircle, CheckCircle2,
-  Clock, CalendarDays, CalendarRange, Zap,
+  Clock, CalendarRange, Zap, AlertTriangle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type TimelineStep = { title: string; description: string };
 
@@ -29,11 +27,11 @@ type CrisisType = {
   iconBg: string;
   iconColor: string;
   border: string;
+  cardBg: string;
   accent: string;
+  barColor: string;
   timeline: Timeline;
 };
-
-// ─── Crisis Data with Timeline Triage ─────────────────────────────────────────
 
 const CRISES: CrisisType[] = [
   {
@@ -44,7 +42,9 @@ const CRISES: CrisisType[] = [
     iconBg: "bg-amber-100 dark:bg-amber-900/30",
     iconColor: "text-amber-600 dark:text-amber-400",
     border: "border-amber-200 dark:border-amber-800",
+    cardBg: "bg-linear-to-r from-amber-50/80 to-transparent dark:from-amber-900/10 dark:to-transparent",
     accent: "text-amber-700 dark:text-amber-300",
+    barColor: "bg-amber-500",
     timeline: {
       tenMin: [
         { title: "Breathe — you will get through this", description: "Take 5 minutes. This is a shock, and it's okay to feel overwhelmed. Don't make any big decisions right now." },
@@ -73,7 +73,9 @@ const CRISES: CrisisType[] = [
     iconBg: "bg-red-100 dark:bg-red-900/30",
     iconColor: "text-red-600 dark:text-red-400",
     border: "border-red-200 dark:border-red-800",
+    cardBg: "bg-linear-to-r from-red-50/80 to-transparent dark:from-red-900/10 dark:to-transparent",
     accent: "text-red-700 dark:text-red-300",
+    barColor: "bg-red-500",
     timeline: {
       tenMin: [
         { title: "Don't panic — medical debt is negotiable", description: "Unlike most debt, medical bills can almost always be reduced, put on payment plans, or forgiven entirely." },
@@ -101,7 +103,9 @@ const CRISES: CrisisType[] = [
     iconBg: "bg-blue-100 dark:bg-blue-900/30",
     iconColor: "text-blue-600 dark:text-blue-400",
     border: "border-blue-200 dark:border-blue-800",
+    cardBg: "bg-linear-to-r from-blue-50/80 to-transparent dark:from-blue-900/10 dark:to-transparent",
     accent: "text-blue-700 dark:text-blue-300",
+    barColor: "bg-blue-500",
     timeline: {
       tenMin: [
         { title: "Check for injuries — call 911 if needed", description: "Your safety comes first. If anyone is hurt, call 911 immediately. Move to a safe location if possible." },
@@ -129,7 +133,9 @@ const CRISES: CrisisType[] = [
     iconBg: "bg-purple-100 dark:bg-purple-900/30",
     iconColor: "text-purple-600 dark:text-purple-400",
     border: "border-purple-200 dark:border-purple-800",
+    cardBg: "bg-linear-to-r from-purple-50/80 to-transparent dark:from-purple-900/10 dark:to-transparent",
     accent: "text-purple-700 dark:text-purple-300",
+    barColor: "bg-purple-500",
     timeline: {
       tenMin: [
         { title: "Read the notice carefully — know your rights", description: "An eviction notice is NOT the same as an eviction. You have legal rights and time to respond. Don't leave yet." },
@@ -157,7 +163,9 @@ const CRISES: CrisisType[] = [
     iconBg: "bg-yellow-100 dark:bg-yellow-900/30",
     iconColor: "text-yellow-600 dark:text-yellow-400",
     border: "border-yellow-200 dark:border-yellow-800",
+    cardBg: "bg-linear-to-r from-yellow-50/80 to-transparent dark:from-yellow-900/10 dark:to-transparent",
     accent: "text-yellow-700 dark:text-yellow-300",
+    barColor: "bg-yellow-500",
     timeline: {
       tenMin: [
         { title: "Confirm your household is physically safe", description: "Do not return to a damaged home until cleared by authorities. Gas leaks and structural damage can be invisible." },
@@ -179,37 +187,33 @@ const CRISES: CrisisType[] = [
   },
 ];
 
-// ─── Timeline Tab Labels ──────────────────────────────────────────────────────
-
 const TIMELINE_TABS = [
-  { key: "tenMin" as const, label: "First 10 min", shortLabel: "10 min", icon: Zap, description: "Do these right now" },
-  { key: "twentyFourHr" as const, label: "First 24 hours", shortLabel: "24 hrs", icon: Clock, description: "Handle today" },
-  { key: "sevenDay" as const, label: "First 7 days", shortLabel: "7 days", icon: CalendarRange, description: "This week" },
+  { key: "tenMin" as const,      label: "First 10 min",   shortLabel: "10 min", icon: Zap,          description: "Do these right now" },
+  { key: "twentyFourHr" as const, label: "First 24 hours", shortLabel: "24 hrs", icon: Clock,         description: "Handle today" },
+  { key: "sevenDay" as const,    label: "First 7 days",   shortLabel: "7 days", icon: CalendarRange, description: "This week" },
 ];
-
-// ─── Crisis Card ──────────────────────────────────────────────────────────────
 
 function CrisisCard({ crisis, onSelect }: { crisis: CrisisType; onSelect: (c: CrisisType) => void }) {
   const { Icon } = crisis;
   return (
     <button onClick={() => onSelect(crisis)} className="w-full text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
-      <Card className={`${crisis.border} rounded-2xl transition-all group-hover:shadow-md group-active:scale-[0.99] bg-card`}>
-        <CardContent className="flex items-center gap-4 p-4">
-          <div className={`flex items-center justify-center w-11 h-11 rounded-xl shrink-0 ${crisis.iconBg}`}>
-            <Icon className={`h-5 w-5 ${crisis.iconColor}`} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-foreground text-sm">{crisis.label}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{crisis.sub}</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-        </CardContent>
+      <Card className={`border ${crisis.border} rounded-2xl transition-all group-hover:shadow-md group-active:scale-[0.99] overflow-hidden`}>
+        <div className={`${crisis.cardBg}`}>
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className={`flex items-center justify-center w-11 h-11 rounded-xl shrink-0 ${crisis.iconBg}`}>
+              <Icon className={`h-5 w-5 ${crisis.iconColor}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`font-bold text-sm ${crisis.accent}`}>{crisis.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{crisis.sub}</p>
+            </div>
+            <ChevronRight className={`h-4 w-4 shrink-0 ${crisis.iconColor} group-hover:translate-x-0.5 transition-transform`} />
+          </CardContent>
+        </div>
       </Card>
     </button>
   );
 }
-
-// ─── Timeline Triage View ─────────────────────────────────────────────────────
 
 function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<"tenMin" | "twentyFourHr" | "sevenDay">("tenMin");
@@ -223,7 +227,6 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
   const steps = crisis.timeline[activeTab];
   const currentChecked = checked[activeTab];
   const doneCount = currentChecked.filter(Boolean).length;
-
   const totalDone = Object.values(checked).flat().filter(Boolean).length;
   const totalSteps = Object.values(crisis.timeline).flat().length;
 
@@ -248,14 +251,23 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
           <Icon className={`h-5 w-5 ${crisis.iconColor}`} />
         </div>
         <div>
-          <p className="font-bold text-foreground text-sm">{crisis.label}</p>
+          <p className={`font-bold text-sm ${crisis.accent}`}>{crisis.label}</p>
           <p className="text-xs text-muted-foreground">{totalDone} of {totalSteps} total steps done</p>
         </div>
       </div>
 
       {/* Overall progress */}
-      <div className="h-1.5 w-full rounded-full overflow-hidden bg-border">
-        <div className="h-full rounded-full transition-all duration-500 bg-primary" style={{ width: `${(totalDone / totalSteps) * 100}%` }} />
+      <div className="flex flex-col gap-1.5">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>Overall progress</span>
+          <span className="font-semibold text-foreground tabular-nums">{Math.round((totalDone / totalSteps) * 100)}%</span>
+        </div>
+        <div className="h-2 w-full rounded-full overflow-hidden bg-border">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${crisis.barColor}`}
+            style={{ width: `${(totalDone / totalSteps) * 100}%` }}
+          />
+        </div>
       </div>
 
       {/* Timeline Tabs */}
@@ -274,12 +286,12 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
                 "flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center transition-all border",
                 isActive
                   ? `${crisis.border} bg-card shadow-sm`
-                  : "border-transparent hover:bg-accent",
+                  : "border-transparent bg-muted/50 hover:bg-muted",
               ].join(" ")}
             >
               <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? crisis.iconBg : "bg-muted"}`}>
                 {tabComplete ? (
-                  <CheckCircle2 className={`h-4 w-4 ${isActive ? crisis.iconColor : "text-green-500"}`} />
+                  <CheckCircle2 className={`h-4 w-4 ${isActive ? crisis.iconColor : "text-emerald-500"}`} />
                 ) : (
                   <TabIcon className={`h-4 w-4 ${isActive ? crisis.iconColor : "text-muted-foreground"}`} />
                 )}
@@ -289,27 +301,29 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
                 <span className="sm:hidden">{shortLabel}</span>
               </span>
               <span className="text-[10px] text-muted-foreground hidden sm:block">{description}</span>
-              <span className="text-[10px] text-muted-foreground tabular-nums">{tabDone}/{tabSteps.length}</span>
+              <span className={`text-[10px] tabular-nums font-semibold ${tabComplete ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                {tabDone}/{tabSteps.length}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Active tab description */}
-      <div className={`rounded-xl px-4 py-2.5 ${crisis.iconBg}`}>
-        <p className={`text-xs font-bold ${crisis.accent}`}>
+      {/* Active tab context bar */}
+      <div className={`rounded-xl px-4 py-2.5 border ${crisis.border} ${crisis.cardBg}`}>
+        <p className={`text-xs font-semibold ${crisis.accent}`}>
           {TIMELINE_TABS.find((t) => t.key === activeTab)?.description} — {doneCount} of {steps.length} done
         </p>
       </div>
 
       {/* Steps */}
-      <ol className="flex flex-col gap-3">
+      <ol className="flex flex-col gap-2.5">
         {steps.map((step, i) => {
           const done = currentChecked[i];
           return (
             <li key={`${activeTab}-${i}`}>
               <button onClick={() => toggle(i)} className="w-full text-left group rounded-2xl">
-                <Card className={`${done ? crisis.border : "border-border"} rounded-2xl transition-all bg-card`}>
+                <Card className={`${done ? crisis.border : "border-border"} rounded-2xl transition-all ${done ? crisis.cardBg : "bg-card"}`}>
                   <CardContent className="flex items-start gap-4 p-4">
                     <div className="shrink-0 mt-0.5">
                       {done ? (
@@ -338,9 +352,9 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
         })}
       </ol>
 
-      {/* Talk to Buddy */}
-      <Link href={`/buddy`} className="block w-full mt-1">
-        <Button className="w-full h-12 text-sm font-bold rounded-2xl gap-2.5">
+      {/* Talk to Buddy CTA */}
+      <Link href="/buddy" className="block w-full mt-1">
+        <Button className="w-full h-12 text-sm font-bold rounded-2xl gap-2.5 bg-linear-to-br from-primary to-primary/80 shadow-sm">
           <MessageCircle className="h-4 w-4" />
           Talk to my Buddy about {crisis.label.toLowerCase()}
         </Button>
@@ -352,8 +366,6 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function CrisisPage() {
   const [selected, setSelected] = useState<CrisisType | null>(null);
 
@@ -363,10 +375,15 @@ export default function CrisisPage() {
         {!selected ? (
           <>
             <section className="mb-6">
-              <h1 className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
-                {"What's happening?"}
-              </h1>
-              <p className="text-base text-muted-foreground mt-1">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-destructive/10 shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                </div>
+                <h1 className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
+                  {"What's happening?"}
+                </h1>
+              </div>
+              <p className="text-base text-muted-foreground mt-1 ml-13">
                 {"Select your situation and we'll walk you through it, step by step."}
               </p>
             </section>
