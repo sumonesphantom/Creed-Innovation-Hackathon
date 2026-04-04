@@ -2,16 +2,18 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingFeatures } from "@/components/landing/landing-features";
 import { LandingFooter } from "@/components/landing/landing-footer";
+import { BottomNav } from "@/components/landing/bottom-nav";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background font-sans">
       <LandingHeader />
-      <main className="flex flex-1 flex-col items-center">
+      <main className="flex flex-1 flex-col items-center pb-20">
         <LandingHero />
         <LandingFeatures />
       </main>
       <LandingFooter />
+      <BottomNav />
     </div>
   );
 }
