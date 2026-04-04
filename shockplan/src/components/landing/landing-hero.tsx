@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Shield, ArrowRight } from "lucide-react";
+import { DemoButton } from "@/components/landing/demo-button";
 
 export function LandingHero() {
   return (
@@ -33,15 +34,7 @@ export function LandingHero() {
               Get Started <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>
-          <Link href="/dashboard" className="w-full sm:w-auto">
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto text-base py-6 px-8 rounded-2xl"
-            >
-              View Demo
-            </Button>
-          </Link>
+          <DemoButton />
         </div>
 
         <p className="mt-5 text-xs text-muted-foreground/70">

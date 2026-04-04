@@ -57,6 +57,8 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
                 <Image
                     src={user.picture}
                     alt=""
+                    width={28}
+                    height={28}
                     className="w-7 h-7 rounded-full shrink-0"
                     referrerPolicy="no-referrer"
                 />
@@ -79,7 +81,7 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
             )}
             {!collapsed && (
                 <a
-                    href="/auth/logout?returnTo=/"
+                    href="/auth/logout"
                     className="p-1 text-muted-foreground hover:text-foreground transition-colors"
                     title="Sign out"
                 >

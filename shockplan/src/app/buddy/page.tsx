@@ -90,10 +90,43 @@ function BuddyChatInner() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [historyReady, setHistoryReady] = useState(false);
 
+  const STORAGE_KEY = "shockplan_buddy_messages";
+
+  const saveToLocalStorage = (msgs: Message[]) => {
+    try {
+      const toSave = msgs.filter((m) => m.id !== "welcome");
+      if (toSave.length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      }
+    } catch {}
+  };
+
+  const loadFromLocalStorage = (): Message[] => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw).map((m: { id: string; role: string; content: string; timestamp: string }) => ({
+        ...m,
+        role: m.role as "user" | "buddy",
+        timestamp: new Date(m.timestamp),
+      }));
+    } catch {
+      return [];
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const deviceId = typeof window !== "undefined" ? localStorage.getItem("shockplan_device_id") || "" : "";
+
+      // Load from localStorage immediately so history shows instantly
+      const cached = loadFromLocalStorage();
+      if (!cancelled && cached.length > 0) {
+        setMessages(cached);
+        setHistoryReady(true);
+      }
+
       try {
         const res = await fetch(`/api/buddy?deviceId=${encodeURIComponent(deviceId)}`);
         const data = await res.json();
@@ -109,7 +142,8 @@ function BuddyChatInner() {
         if (!cancelled) {
           if (list.length > 0) {
             setMessages(list);
-          } else {
+            saveToLocalStorage(list);
+          } else if (cached.length === 0) {
             setMessages([
               {
                 id: "welcome",
@@ -121,7 +155,7 @@ function BuddyChatInner() {
           }
         }
       } catch {
-        if (!cancelled) {
+        if (!cancelled && cached.length === 0) {
           setMessages([
             {
               id: "welcome",
@@ -138,6 +172,7 @@ function BuddyChatInner() {
     return () => {
       cancelled = true;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -175,6 +210,7 @@ function BuddyChatInner() {
     } catch {
       return;
     }
+    localStorage.removeItem(STORAGE_KEY);
     setMessages([
       {
         id: "welcome",
@@ -276,6 +312,13 @@ function BuddyChatInner() {
               )
             );
           }
+        }
+        // Save to localStorage after stream completes
+        if (buddyId) {
+          setMessages((prev) => {
+            saveToLocalStorage(prev);
+            return prev;
+          });
         }
       } finally {
         reader.releaseLock();

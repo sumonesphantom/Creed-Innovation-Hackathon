@@ -82,8 +82,11 @@ function BreakdownRow({
       </div>
       <span className="text-xs font-medium text-gray-700 w-10 text-right">{value}/{max}</span>
       <Popover>
-        <PopoverTrigger>
-          <HelpCircle className="h-3.5 w-3.5 text-gray-300 hover:text-gray-500 cursor-pointer" />
+        <PopoverTrigger
+          className="inline-flex rounded-md p-0.5 text-muted-foreground hover:text-foreground"
+          aria-label={`Why ${label}`}
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
         </PopoverTrigger>
         <PopoverContent className="text-xs w-56">{tip}</PopoverContent>
       </Popover>
