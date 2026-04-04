@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { Profile, Score, VaultMetadata } from "@/lib/models";
+import { Profile, Score } from "@/lib/models";
 import { calculateReadinessScore } from "@/lib/score";
 import { getUserIdentifier, buildUserQuery } from "@/lib/get-user";
 
@@ -40,15 +40,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Profile not found" }, { status: 404 });
   }
 
-  const vaultDocs = await VaultMetadata.find(query);
-  const documentCount: Record<string, number> = {};
-  for (const doc of vaultDocs) {
-    documentCount[doc.category] = (documentCount[doc.category] || 0) + 1;
-  }
-
   const scoreData = calculateReadinessScore(
     profile.toObject(),
-    documentCount,
     hasCompletedCrisisFlow || false,
     hasUsedBudget || false,
     hasVisitedBenefits || false

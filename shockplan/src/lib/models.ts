@@ -43,7 +43,6 @@ const ScoreSchema = new Schema({
   breakdown: {
     savings: { type: Number, default: 0 },
     insurance: { type: Number, default: 0 },
-    documents: { type: Number, default: 0 },
     awareness: { type: Number, default: 0 },
   },
   calculatedAt: { type: Date, default: Date.now },
@@ -57,17 +56,6 @@ const CommunityPostSchema = new Schema({
   content: { type: String, required: true, maxlength: 500 },
   upvotes: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
-});
-
-// ─── Vault ───────────────────────────────────────────────────────────────────
-
-const VaultMetadataSchema = new Schema({
-  deviceId: { type: String, default: "", index: true },
-  userId: { type: String, default: "", index: true },
-  fileName: { type: String, required: true },
-  fileType: { type: String, required: true },
-  category: { type: String, required: true },
-  uploadedAt: { type: Date, default: Date.now },
 });
 
 const BuddyChatMessageSchema = new Schema(
@@ -144,8 +132,6 @@ export const Score =
   mongoose.models.Score || mongoose.model("Score", ScoreSchema);
 export const CommunityPostModel =
   mongoose.models.CommunityPost || mongoose.model("CommunityPost", CommunityPostSchema);
-export const VaultMetadata =
-  mongoose.models.VaultMetadata || mongoose.model("VaultMetadata", VaultMetadataSchema);
 export const BuddyChat =
   mongoose.models.BuddyChat || mongoose.model("BuddyChat", BuddyChatSchema);
 export const FlowPlan =

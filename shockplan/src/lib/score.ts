@@ -2,7 +2,6 @@ import { UserProfile, ReadinessScore } from "@/types";
 
 export function calculateReadinessScore(
   profile: UserProfile,
-  documentCount: Record<string, number> = {},
   hasCompletedCrisisFlow: boolean = false,
   hasUsedBudget: boolean = false,
   hasVisitedBenefits: boolean = false
@@ -18,27 +17,19 @@ export function calculateReadinessScore(
   if (insuranceCount >= 3) insurance += 5;
   insurance = Math.min(insurance, 25);
 
-  // Documents (25 pts) — 5 pts per category with at least one doc
-  const docCategories = ["insurance", "id", "lease", "medical", "financial"];
-  let documents = 0;
-  for (const cat of docCategories) {
-    if ((documentCount[cat] || 0) > 0) documents += 5;
-  }
-  documents = Math.min(documents, 25);
-
-  // Awareness (25 pts)
+  // Awareness (50 pts) — engagement with app tools
   let awareness = 0;
-  if (hasCompletedCrisisFlow) awareness += 10;
-  if (hasUsedBudget) awareness += 10;
-  if (hasVisitedBenefits) awareness += 5;
-  awareness = Math.min(awareness, 25);
+  if (hasCompletedCrisisFlow) awareness += 20;
+  if (hasUsedBudget) awareness += 20;
+  if (hasVisitedBenefits) awareness += 10;
+  awareness = Math.min(awareness, 50);
 
-  const score = savings + insurance + documents + awareness;
+  const score = savings + insurance + awareness;
 
   return {
     deviceId: profile.deviceId,
     score,
-    breakdown: { savings, insurance, documents, awareness },
+    breakdown: { savings, insurance, awareness },
     calculatedAt: new Date(),
   };
 }

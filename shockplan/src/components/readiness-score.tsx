@@ -7,7 +7,6 @@ import { HelpCircle } from "lucide-react";
 interface ScoreBreakdown {
   savings: number;
   insurance: number;
-  documents: number;
   awareness: number;
 }
 
@@ -58,8 +57,7 @@ export function ReadinessScoreRing({
       <div className="w-full max-w-xs space-y-2">
         <BreakdownRow label="Savings" value={breakdown.savings} max={25} tip="Based on your ability to cover a $500 surprise expense." />
         <BreakdownRow label="Insurance" value={breakdown.insurance} max={25} tip="5 points per coverage type (auto, renters, health, life). Bonus at 3+." />
-        <BreakdownRow label="Documents" value={breakdown.documents} max={25} tip="5 points per document category uploaded to your vault." />
-        <BreakdownRow label="Awareness" value={breakdown.awareness} max={25} tip="Points for using crisis flows, budget tools, and benefits page." />
+        <BreakdownRow label="Awareness" value={breakdown.awareness} max={50} tip="Points for using crisis flows, budget tools, benefits page, and similar tools (up to 50)." />
       </div>
     </div>
   );

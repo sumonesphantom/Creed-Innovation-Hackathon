@@ -64,7 +64,7 @@ function buildUserContext(profile: UserProfile, score?: ReadinessScore): string 
 
   if (score) {
     parts.push(`- Shock Readiness Score: ${score.score}/100`);
-    parts.push(`  Savings: ${score.breakdown.savings}/25, Insurance: ${score.breakdown.insurance}/25, Documents: ${score.breakdown.documents}/25, Awareness: ${score.breakdown.awareness}/25`);
+    parts.push(`  Savings: ${score.breakdown.savings}/25, Insurance: ${score.breakdown.insurance}/25, Awareness: ${score.breakdown.awareness}/50`);
   }
 
   return parts.join("\n");

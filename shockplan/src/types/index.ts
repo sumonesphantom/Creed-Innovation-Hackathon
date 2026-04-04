@@ -32,7 +32,6 @@ export interface ReadinessScore {
   breakdown: {
     savings: number;
     insurance: number;
-    documents: number;
     awareness: number;
   };
   calculatedAt: Date;
@@ -52,16 +51,6 @@ export interface CommunityPost {
   content: string;
   upvotes: number;
   createdAt: Date;
-}
-
-export interface VaultItem {
-  _id?: string;
-  deviceId?: string;
-  userId?: string;
-  fileName: string;
-  fileType: string;
-  category: "insurance" | "id" | "lease" | "medical" | "financial";
-  uploadedAt: Date;
 }
 
 export interface CrisisEvent {

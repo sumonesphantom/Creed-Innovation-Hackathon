@@ -10,7 +10,6 @@ import {
     DollarSign,
     GitBranch,
     Users,
-    FolderLock,
     Shield,
     Settings,
     Menu,
@@ -31,7 +30,6 @@ const navItems = [
     { label: "Budget", href: "/budget", icon: DollarSign },
     { label: "Flow", href: "/flow", icon: GitBranch },
     { label: "Community", href: "/community", icon: Users },
-    { label: "Vault", href: "/vault", icon: FolderLock },
     { label: "My Data", href: "/my-data", icon: Settings },
 ] as const;
 

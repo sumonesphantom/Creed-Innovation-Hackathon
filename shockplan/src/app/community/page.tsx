@@ -26,14 +26,6 @@ const CRISIS_LABELS: Record<string, string> = {
   "natural-disaster": "Natural Disaster",
 };
 
-const CRISIS_COLORS: Record<string, string> = {
-  "job-loss":         "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-  "medical-bills":    "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800",
-  "car-accident":     "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800",
-  eviction:           "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-  "natural-disaster": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800",
-};
-
 type Post = {
   _id: string;
   crisisType: string;
@@ -141,164 +133,171 @@ export default function CommunityPage() {
 
   return (
     <AppShell>
-      <div className="max-w-3xl mx-auto px-4 py-6 lg:py-10 space-y-6">
-        {/* Header */}
-        <div className="flex items-start gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 shrink-0">
-            <Users className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Community</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Anonymous tips from people who have been through a shock. No account needed to share.
-            </p>
-          </div>
+      <div className="relative w-full min-h-screen max-w-3xl mx-auto px-6 lg:px-8 py-6 lg:py-10">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
+          <div
+            className="absolute top-0 right-0 w-2/3 h-2/3 opacity-40 dark:opacity-10"
+            style={{ background: "radial-gradient(ellipse at top right, #FEFAE8 0%, transparent 65%)" }}
+          />
         </div>
 
-        {/* Compose card */}
-        <Card className="rounded-2xl border-border shadow-sm overflow-hidden">
-          <div className="h-1 w-full bg-linear-to-r from-primary to-primary/30" />
-          <CardContent className="p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <PenLine className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-sm font-bold text-foreground">Share your experience</h2>
+        <div className="relative space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-border bg-card shrink-0">
+              <Users className="h-5 w-5 text-muted-foreground" />
             </div>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="crisis" className="text-xs font-semibold text-muted-foreground">Crisis type</Label>
-                <select
-                  id="crisis"
-                  value={composeCrisis}
-                  onChange={(e) => setComposeCrisis(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  {CRISIS_OPTIONS.filter((o) => o.id !== "all").map((o) => (
-                    <option key={o.id} value={o.id}>{o.label}</option>
-                  ))}
-                </select>
+            <div>
+              <h1 className="text-2xl lg:text-[28px] font-medium text-foreground tracking-[-0.02em]">
+                Community
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                Anonymous tips from people who have been through a shock. No account needed to share.
+              </p>
+            </div>
+          </div>
+
+          <Card className="rounded-[10px] border border-border shadow-[0_1px_4px_rgba(0,0,0,0.05)] overflow-hidden py-0 gap-0">
+            <div className="h-1 w-full shrink-0 bg-[#F5C518]" />
+            <CardContent className="p-4 sm:p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <PenLine className="h-4 w-4 text-muted-foreground" />
+                <h2 className="text-lg font-medium text-foreground tracking-tight">Share your experience</h2>
               </div>
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-end">
-                  <Label htmlFor="body" className="text-xs font-semibold text-muted-foreground">Your tip</Label>
-                  <span className={`text-[10px] tabular-nums ${composeText.length > 450 ? "text-destructive" : "text-muted-foreground"}`}>
-                    {composeText.length}/500
-                  </span>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="crisis" className="text-xs font-medium text-muted-foreground">Crisis type</Label>
+                  <select
+                    id="crisis"
+                    value={composeCrisis}
+                    onChange={(e) => setComposeCrisis(e.target.value)}
+                    className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  >
+                    {CRISIS_OPTIONS.filter((o) => o.id !== "all").map((o) => (
+                      <option key={o.id} value={o.id}>{o.label}</option>
+                    ))}
+                  </select>
                 </div>
-                <Textarea
-                  id="body"
-                  value={composeText}
-                  onChange={(e) => setComposeText(e.target.value.slice(0, 500))}
-                  placeholder="I wish I had known…"
-                  rows={4}
-                  className="rounded-xl resize-none min-h-[100px] focus:ring-2 focus:ring-primary/50"
-                  maxLength={500}
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={submitting || composeText.trim().length < 1}
-                className="rounded-xl gap-2"
-              >
-                {submitting ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" />Posting…</>
-                ) : (
-                  "Post anonymously"
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-end">
+                    <Label htmlFor="body" className="text-xs font-medium text-muted-foreground">Your tip</Label>
+                    <span className={`text-[10px] tabular-nums ${composeText.length > 450 ? "text-destructive" : "text-muted-foreground"}`}>
+                      {composeText.length}/500
+                    </span>
+                  </div>
+                  <Textarea
+                    id="body"
+                    value={composeText}
+                    onChange={(e) => setComposeText(e.target.value.slice(0, 500))}
+                    placeholder="I wish I had known…"
+                    rows={4}
+                    className="rounded-lg resize-none min-h-[100px] focus:ring-2 focus:ring-primary/40"
+                    maxLength={500}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={submitting || composeText.trim().length < 1}
+                  className="rounded-lg gap-2"
+                >
+                  {submitting ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" />Posting…</>
+                  ) : (
+                    "Post anonymously"
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-        {/* Filter chips */}
-        <div className="space-y-2.5">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Filter by crisis</p>
-          <div className="flex flex-wrap gap-2">
-            {CRISIS_OPTIONS.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                onClick={() => setFilter(o.id)}
-                className={[
-                  "px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all",
-                  filter === o.id
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-muted-foreground/50",
-                ].join(" ")}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {error && (
-          <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3" role="alert">
-            {error}
-          </p>
-        )}
-
-        {/* Posts */}
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span className="text-sm">Loading posts…</span>
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
-              <Users className="h-6 w-6 text-muted-foreground" />
+          <div className="space-y-2">
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">Filter by crisis</p>
+            <div className="flex flex-wrap gap-2">
+              {CRISIS_OPTIONS.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => setFilter(o.id)}
+                  className={[
+                    "px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                    filter === o.id
+                      ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
+                      : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-muted-foreground/40",
+                  ].join(" ")}
+                >
+                  {o.label}
+                </button>
+              ))}
             </div>
-            <p className="text-sm text-muted-foreground">No posts yet for this filter. Be the first to share!</p>
           </div>
-        ) : (
-          <ul className="space-y-3">
-            {posts.map((p) => (
-              <li key={p._id}>
-                <Card className="rounded-2xl border-border hover:shadow-md transition-shadow">
-                  <CardContent className="p-5 space-y-3">
-                    <div className="flex flex-wrap items-center gap-2 justify-between">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${CRISIS_COLORS[p.crisisType] ?? "bg-muted text-muted-foreground border-border"}`}>
-                          {CRISIS_LABELS[p.crisisType] ?? p.crisisType}
-                        </span>
-                        {p.state && (
-                          <Badge variant="outline" className="rounded-full text-[10px] h-5 font-normal">
-                            {p.state}
-                          </Badge>
-                        )}
+
+          {error && (
+            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-[10px] px-4 py-3" role="alert">
+              {error}
+            </p>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-sm">Loading posts…</span>
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <div className="w-12 h-12 rounded-lg border border-border bg-card flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+                <Users className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground">No posts yet for this filter. Be the first to share!</p>
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {posts.map((p) => (
+                <li key={p._id}>
+                  <Card className="rounded-[10px] border border-border shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-shadow">
+                    <CardContent className="p-4 sm:p-5 space-y-3">
+                      <div className="flex flex-wrap items-center gap-2 justify-between">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#1A1A1A] text-white">
+                            {CRISIS_LABELS[p.crisisType] ?? p.crisisType}
+                          </span>
+                          {p.state && (
+                            <Badge variant="outline" className="rounded-full text-[10px] h-5 font-normal border-border">
+                              {p.state}
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground tabular-nums">{formatRelativeTime(p.createdAt)}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground">{formatRelativeTime(p.createdAt)}</span>
-                    </div>
-                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap border-l-2 border-border pl-3">
-                      {p.content}
-                    </p>
-                    <div className="flex items-center pt-1">
-                      <button
-                        type="button"
-                        className={[
-                          "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
-                          upvotingId === p._id
-                            ? "text-muted-foreground"
-                            : "text-muted-foreground hover:text-primary hover:bg-primary/10",
-                        ].join(" ")}
-                        disabled={upvotingId === p._id}
-                        onClick={() => void handleUpvote(p._id)}
-                      >
-                        {upvotingId === p._id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <ThumbsUp className="h-3.5 w-3.5" />
-                        )}
-                        <span className="tabular-nums">{p.upvotes}</span>
-                        <span>helpful</span>
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        )}
+                      <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap border-l-2 border-[#E8E8E8] pl-3">
+                        {p.content}
+                      </p>
+                      <div className="flex items-center pt-0.5">
+                        <button
+                          type="button"
+                          className={[
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                            upvotingId === p._id
+                              ? "text-muted-foreground"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                          ].join(" ")}
+                          disabled={upvotingId === p._id}
+                          onClick={() => void handleUpvote(p._id)}
+                        >
+                          {upvotingId === p._id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <ThumbsUp className="h-3.5 w-3.5" />
+                          )}
+                          <span className="tabular-nums">{p.upvotes}</span>
+                          <span>helpful</span>
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </AppShell>
   );

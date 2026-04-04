@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import {
-  AlertTriangle, BookOpen, FileText, Umbrella,
+  AlertTriangle, BookOpen, GitBranch, Umbrella,
   Lightbulb, ChevronRight, HelpCircle, TrendingUp,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,29 +16,25 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 type Breakdown = {
   savings: number;
   insurance: number;
-  documents: number;
   awareness: number;
 };
 
-const SCORE_WHY: Record<"Savings" | "Insurance" | "Documents" | "Awareness", string> = {
+const SCORE_WHY: Record<"Savings" | "Insurance" | "Awareness", string> = {
   Savings:
     "Points from your answer about covering a $500 surprise: yes is strongest, maybe is partial, no is lowest.",
   Insurance:
     "Up to 5 points per insurance type you said you have (auto, renters, health, life, etc.), with a bonus when you have several kinds of coverage.",
-  Documents:
-    "Up to 5 points per document category you have in the vault (insurance, ID, lease, medical, financial).",
   Awareness:
-    "Points when you use crisis flows, the budget tool, and other awareness-building parts of the app.",
+    "Points when you use crisis flows, the budget tool, benefits page, and other awareness-building parts of the app (up to 50).",
 };
 
-// Monochrome + yellow theme: dark → gray → gray → yellow hierarchy
+// Monochrome + yellow theme: dark → gray → yellow hierarchy
 const CATEGORY_COLORS: Record<
-  "Savings" | "Insurance" | "Documents" | "Awareness",
+  "Savings" | "Insurance" | "Awareness",
   { bar: string; dot: string }
 > = {
   Savings:   { bar: "bg-[#1A1A1A] dark:bg-gray-200", dot: "bg-[#1A1A1A] dark:bg-gray-200" },
   Insurance: { bar: "bg-gray-500 dark:bg-gray-400",  dot: "bg-gray-500 dark:bg-gray-400" },
-  Documents: { bar: "bg-gray-400 dark:bg-gray-500",  dot: "bg-gray-400 dark:bg-gray-500" },
   Awareness: { bar: "bg-[#F5C518]",                  dot: "bg-[#F5C518]" },
 };
 
@@ -66,8 +62,7 @@ function ReadinessRing({ score, breakdown }: { score: number; breakdown: Breakdo
   const rows = [
     { label: "Savings" as const,   value: breakdown.savings,   max: 25 },
     { label: "Insurance" as const, value: breakdown.insurance, max: 25 },
-    { label: "Documents" as const, value: breakdown.documents, max: 25 },
-    { label: "Awareness" as const, value: breakdown.awareness, max: 25 },
+    { label: "Awareness" as const, value: breakdown.awareness, max: 50 },
   ];
 
   return (
@@ -180,10 +175,10 @@ const ACTIONS = [
     iconColor: "text-white",
   },
   {
-    icon: FileText,
-    label: "Upload key documents",
-    sub: "ID, lease, insurance cards",
-    href: "/vault",
+    icon: GitBranch,
+    label: "Try the Flow of Life planner",
+    sub: "Map branches of your financial path",
+    href: "/flow",
     iconBg: "bg-[#F5C518]",
     iconColor: "text-[#1A1A1A]",
   },
@@ -243,7 +238,7 @@ function ScoreCardSkeleton() {
         <div className="w-42 h-42 rounded-full bg-muted" />
       </div>
       <div className="space-y-3.5 w-full">
-        {[1, 2, 3, 4].map((i) => (
+        {[1, 2, 3].map((i) => (
           <div key={i} className="space-y-2">
             <div className="flex justify-between">
               <div className="h-3 bg-muted rounded w-1/4" />
@@ -263,7 +258,7 @@ export default function DashboardPage() {
   const [status, setStatus] = useState<"loading" | "error" | "no-profile" | "ready">("loading");
   const [score, setScore] = useState(0);
   const [breakdown, setBreakdown] = useState<Breakdown>({
-    savings: 0, insurance: 0, documents: 0, awareness: 0,
+    savings: 0, insurance: 0, awareness: 0,
   });
 
   const loadScore = useCallback(async () => {
@@ -286,7 +281,7 @@ export default function DashboardPage() {
       if (!res.ok) { setStatus("error"); return; }
       const data = (await res.json()) as { score?: number; breakdown?: Breakdown };
       setScore(typeof data.score === "number" ? data.score : 0);
-      setBreakdown(data.breakdown ?? { savings: 0, insurance: 0, documents: 0, awareness: 0 });
+      setBreakdown(data.breakdown ?? { savings: 0, insurance: 0, awareness: 0 });
       setStatus("ready");
     } catch {
       setStatus("error");

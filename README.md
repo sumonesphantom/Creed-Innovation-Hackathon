@@ -55,7 +55,6 @@ Open http://localhost:3000
 | AI Buddy chat | Placeholder | `/buddy` |
 | Crisis event triage | Placeholder | `/crisis` |
 | Emergency budget tool | Placeholder | `/budget` |
-| Document vault | Placeholder | `/vault` |
 | Community feed | Placeholder | `/community` |
 | My Data (privacy controls) | Placeholder | `/my-data` |
 
