@@ -1,3 +1,4 @@
+
 # ShockPlan — Architecture & 2-Day Build Plan
 
 > **Goal:** Deployable by end of Day 1 night. Polished by end of Day 2.
