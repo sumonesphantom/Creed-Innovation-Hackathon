@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Send, Shield, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
@@ -69,12 +70,16 @@ function MessageBubble({ message }: { message: Message }) {
 }
 
 export default function BuddyPage() {
+  const { data: session } = useSession();
+  const firstName = session?.user?.name?.split(" ")[0];
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "buddy",
-      content:
-        "Hey! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?",
+      content: firstName
+        ? `Hey ${firstName}! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?`
+        : "Hey! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?",
       timestamp: new Date(),
     },
   ]);

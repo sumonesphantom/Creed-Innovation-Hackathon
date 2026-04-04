@@ -50,6 +50,19 @@
 - [x] Encrypted badge in header
 - [x] Action items adapt to profile (no insurance → suggest learning)
 
+### Phase 3.5: UI Modernization + Dark Mode (DONE)
+- [x] Theme provider with light/dark/system toggle (localStorage persisted)
+- [x] Dark mode CSS tokens (blue-tinted brand colors)
+- [x] Responsive sidebar nav for desktop (lg+), bottom nav for mobile
+- [x] Mobile hamburger menu with sidebar overlay
+- [x] Landing page: 2-column hero, feature grid, wider max-w-5xl layout
+- [x] Dashboard: 2-column layout (score left, actions right), max-w-6xl
+- [x] Onboarding: centered max-w-3xl card, 2-column option grids on sm+
+- [x] Crisis page: 2-column card grid, max-w-4xl, Tailwind dark classes
+- [x] Budget page: side-by-side input/summary columns, max-w-6xl
+- [x] My Data page: 3-column card grid (privacy, export, delete)
+- [x] All pages use AppShell component (no more inline headers/bottom navs)
+
 ### Phase 4: AI Buddy Chat (DONE)
 - [x] Chat UI with message bubbles (user + buddy styles)
 - [x] Buddy avatar + typing indicator (animated dots)
@@ -59,11 +72,21 @@
 - [x] Auto-scroll, auto-resize textarea, Enter to send
 - [x] Error handling with fallback messages
 
-### Phase 5: Deploy + Test (~1 hr)
-- [ ] Push to GitHub
-- [ ] Deploy to Vercel with env vars
-- [ ] Test full flow on mobile
-- [ ] Share URL with team
+### Phase 5: Auth + Deploy (DONE)
+- [x] Google OAuth via NextAuth.js v5 (next-auth@beta)
+- [x] User model in MongoDB (email, name, image, provider)
+- [x] Sign-in page with Google OAuth + anonymous fallback
+- [x] Session provider wrapping entire app
+- [x] Personalized greetings (dashboard, buddy, onboarding) using session name
+- [x] User avatar + sign-out in sidebar
+- [x] API routes updated: profile, buddy, score all support userId (auth) + deviceId (anonymous)
+- [x] Profile migration: anonymous deviceId profiles auto-link to user account on sign-in
+- [x] Landing page shows Sign In / Dashboard based on auth state
+- [x] `.env.local.example` updated with AUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+- [ ] **TODO: Set up Google Cloud OAuth credentials**
+- [ ] **TODO: Add AUTH_SECRET to `.env.local`**
+- [ ] **TODO: Push to GitHub + deploy to Vercel with env vars**
+- [ ] **TODO: Add production callback URL to Google OAuth**
 
 ### Phase 6: Crisis Event Flows (~2.5 hrs)
 - [ ] Crisis data JSON for 4 events

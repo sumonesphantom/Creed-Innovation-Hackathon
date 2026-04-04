@@ -2,15 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Profile, Score, VaultMetadata } from "@/lib/models";
 import { calculateReadinessScore } from "@/lib/score";
+import { getUserIdentifier, buildUserQuery } from "@/lib/get-user";
 
 export async function GET(request: NextRequest) {
-  const deviceId = request.nextUrl.searchParams.get("deviceId");
-  if (!deviceId) {
-    return NextResponse.json({ error: "deviceId required" }, { status: 400 });
+  const deviceId = request.nextUrl.searchParams.get("deviceId") || "";
+  const { userId, deviceId: resolvedDeviceId } = await getUserIdentifier(deviceId);
+
+  const query = buildUserQuery(userId, resolvedDeviceId);
+  if (!query) {
+    return NextResponse.json({ error: "Not authenticated and no deviceId" }, { status: 400 });
   }
 
   await connectToDatabase();
-  const score = await Score.findOne({ deviceId }).sort({ calculatedAt: -1 });
+  const score = await Score.findOne(query).sort({ calculatedAt: -1 });
 
   if (!score) {
     return NextResponse.json({ error: "Score not found" }, { status: 404 });
@@ -21,21 +25,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { deviceId, hasCompletedCrisisFlow, hasUsedBudget, hasVisitedBenefits } = body;
+  const { deviceId: bodyDeviceId, hasCompletedCrisisFlow, hasUsedBudget, hasVisitedBenefits } = body;
+  const { userId, deviceId: resolvedDeviceId } = await getUserIdentifier(bodyDeviceId);
 
-  if (!deviceId) {
-    return NextResponse.json({ error: "deviceId required" }, { status: 400 });
+  const query = buildUserQuery(userId, resolvedDeviceId);
+  if (!query) {
+    return NextResponse.json({ error: "Not authenticated and no deviceId" }, { status: 400 });
   }
 
   await connectToDatabase();
 
-  const profile = await Profile.findOne({ deviceId });
+  const profile = await Profile.findOne(query);
   if (!profile) {
     return NextResponse.json({ error: "Profile not found" }, { status: 404 });
   }
 
-  // Count documents by category
-  const vaultDocs = await VaultMetadata.find({ deviceId });
+  const vaultDocs = await VaultMetadata.find(query);
   const documentCount: Record<string, number> = {};
   for (const doc of vaultDocs) {
     documentCount[doc.category] = (documentCount[doc.category] || 0) + 1;
@@ -49,9 +54,13 @@ export async function POST(request: NextRequest) {
     hasVisitedBenefits || false
   );
 
+  const upsertQuery = userId
+    ? { userId }
+    : { deviceId: resolvedDeviceId };
+
   const score = await Score.findOneAndUpdate(
-    { deviceId },
-    scoreData,
+    upsertQuery,
+    { ...scoreData, userId, deviceId: resolvedDeviceId },
     { upsert: true, new: true }
   );
 

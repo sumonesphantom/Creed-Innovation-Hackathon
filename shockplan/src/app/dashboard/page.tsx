@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   AlertTriangle, BookOpen, FileText, Umbrella,
   Lightbulb, ChevronRight,
@@ -176,13 +177,16 @@ function ActionItems() {
 // ─── Page ─────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  const firstName = session?.user?.name?.split(" ")[0];
+
   return (
     <AppShell>
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
         {/* Greeting */}
         <section className="mb-8">
           <h1 className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
-            Hey there!
+            {firstName ? `Hey, ${firstName}!` : "Hey there!"}
           </h1>
           <p className="text-base text-muted-foreground mt-1">
             {"Here's where you stand."}

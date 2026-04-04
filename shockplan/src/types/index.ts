@@ -1,5 +1,17 @@
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  image: string;
+  provider: string;
+  deviceId?: string;
+  createdAt: Date;
+  lastLoginAt: Date;
+}
+
 export interface UserProfile {
   deviceId: string;
+  userId?: string;
   household: "single" | "couple" | "family" | "multi-gen" | "";
   housing: "rent" | "own" | "family" | "other" | "";
   incomeType: "salary" | "gig" | "hourly" | "unemployed" | "retired" | "";
@@ -15,6 +27,7 @@ export interface UserProfile {
 
 export interface ReadinessScore {
   deviceId: string;
+  userId?: string;
   score: number;
   breakdown: {
     savings: number;

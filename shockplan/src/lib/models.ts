@@ -1,7 +1,23 @@
 import mongoose, { Schema } from "mongoose";
 
+// ─── User (Auth) ─────────────────────────────────────────────────────────────
+
+const UserSchema = new Schema({
+  email: { type: String, required: true, unique: true, index: true },
+  name: { type: String, default: "" },
+  image: { type: String, default: "" },
+  provider: { type: String, default: "google" },
+  providerId: { type: String, default: "" },
+  deviceId: { type: String, default: "", index: true },
+  createdAt: { type: Date, default: Date.now },
+  lastLoginAt: { type: Date, default: Date.now },
+});
+
+// ─── Profile ─────────────────────────────────────────────────────────────────
+
 const ProfileSchema = new Schema({
-  deviceId: { type: String, required: true, unique: true, index: true },
+  deviceId: { type: String, default: "", index: true },
+  userId: { type: String, default: "", index: true },
   household: { type: String, default: "" },
   housing: { type: String, default: "" },
   incomeType: { type: String, default: "" },
@@ -15,8 +31,14 @@ const ProfileSchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+// Compound index: find profile by userId first, then deviceId fallback
+ProfileSchema.index({ userId: 1, deviceId: 1 });
+
+// ─── Score ───────────────────────────────────────────────────────────────────
+
 const ScoreSchema = new Schema({
-  deviceId: { type: String, required: true, index: true },
+  deviceId: { type: String, default: "", index: true },
+  userId: { type: String, default: "", index: true },
   score: { type: Number, required: true },
   breakdown: {
     savings: { type: Number, default: 0 },
@@ -27,6 +49,8 @@ const ScoreSchema = new Schema({
   calculatedAt: { type: Date, default: Date.now },
 });
 
+// ─── Community ───────────────────────────────────────────────────────────────
+
 const CommunityPostSchema = new Schema({
   crisisType: { type: String, required: true },
   state: { type: String, default: "" },
@@ -35,14 +59,21 @@ const CommunityPostSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// ─── Vault ───────────────────────────────────────────────────────────────────
+
 const VaultMetadataSchema = new Schema({
-  deviceId: { type: String, required: true, index: true },
+  deviceId: { type: String, default: "", index: true },
+  userId: { type: String, default: "", index: true },
   fileName: { type: String, required: true },
   fileType: { type: String, required: true },
   category: { type: String, required: true },
   uploadedAt: { type: Date, default: Date.now },
 });
 
+// ─── Exports ─────────────────────────────────────────────────────────────────
+
+export const User =
+  mongoose.models.User || mongoose.model("User", UserSchema);
 export const Profile =
   mongoose.models.Profile || mongoose.model("Profile", ProfileSchema);
 export const Score =

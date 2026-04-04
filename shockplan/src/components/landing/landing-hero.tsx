@@ -25,7 +25,7 @@ export function LandingHero() {
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          <Link href="/onboarding" className="w-full sm:w-auto">
+          <Link href="/sign-in" className="w-full sm:w-auto">
             <Button
               size="lg"
               className="w-full sm:w-auto text-base font-semibold py-6 px-8 rounded-2xl shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 transition-all"
@@ -45,7 +45,7 @@ export function LandingHero() {
         </div>
 
         <p className="mt-5 text-xs text-muted-foreground/70">
-          No sign-up needed &middot; No bank linking &middot; Your data stays with you
+          Sign in with Google or continue anonymously &middot; Your data stays with you
         </p>
       </div>
 

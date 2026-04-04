@@ -1,7 +1,14 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function LandingHeader() {
+  const { data: session } = useSession();
+
   return (
     <header className="w-full flex items-center justify-between px-6 lg:px-12 py-4 bg-background/80 backdrop-blur-sm sticky top-0 z-10 border-b border-border/50">
       <div className="flex items-center gap-2.5">
@@ -12,15 +19,21 @@ export function LandingHeader() {
           ShockPlan
         </span>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <ThemeToggle />
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span
-            className="inline-block h-2 w-2 rounded-full bg-[oklch(0.62_0.18_150)] shadow-[0_0_6px_oklch(0.62_0.18_150/0.5)]"
-            aria-hidden="true"
-          />
-          <span className="hidden sm:inline">Your data is encrypted</span>
-        </div>
+        {session?.user ? (
+          <Link href="/dashboard">
+            <Button size="sm" className="rounded-xl">
+              Dashboard
+            </Button>
+          </Link>
+        ) : (
+          <Link href="/sign-in">
+            <Button variant="outline" size="sm" className="rounded-xl">
+              Sign In
+            </Button>
+          </Link>
+        )}
       </div>
     </header>
   );

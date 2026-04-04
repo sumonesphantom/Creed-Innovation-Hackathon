@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,6 +49,7 @@ interface ProfileData {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
@@ -128,7 +130,7 @@ export default function OnboardingPage() {
       {/* Content — centered card on desktop */}
       <main className="flex flex-1 flex-col items-center px-4 sm:px-6 lg:px-8 py-4">
         <div className="w-full max-w-3xl">
-          {step === 0 && <WelcomeStep />}
+          {step === 0 && <WelcomeStep userName={session?.user?.name} />}
           {step === 1 && (
             <SelectStep
               title="Who's in your household?"
@@ -196,14 +198,15 @@ export default function OnboardingPage() {
   );
 }
 
-function WelcomeStep() {
+function WelcomeStep({ userName }: { userName?: string | null }) {
+  const firstName = userName?.split(" ")[0];
   return (
     <div className="flex flex-1 flex-col items-center justify-center text-center space-y-4 py-12">
       <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
         <Shield className="h-8 w-8 text-primary" />
       </div>
       <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
-        Hey! I&apos;m your ShockPlan Buddy.
+        {firstName ? `Hey ${firstName}!` : "Hey!"} I&apos;m your ShockPlan Buddy.
       </h1>
       <p className="text-muted-foreground max-w-md">
         Let me learn a little about you so I can help better.

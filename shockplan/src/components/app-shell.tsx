@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
   Home, MessageCircle, AlertTriangle, DollarSign,
-  Shield, Lock, Settings, Menu, X,
+  Shield, Lock, Settings, Menu, X, LogIn, LogOut,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useState } from "react";
@@ -17,6 +18,55 @@ const navItems = [
   { label: "Budget", href: "/budget", icon: DollarSign },
   { label: "My Data", href: "/my-data", icon: Settings },
 ] as const;
+
+function UserSection({ collapsed }: { collapsed?: boolean }) {
+  const { data: session } = useSession();
+
+  if (!session?.user) {
+    return (
+      <Link href="/sign-in">
+        <Button variant="ghost" size={collapsed ? "icon" : "sm"} className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground">
+          <LogIn className="h-4 w-4" />
+          {!collapsed && <span className="text-xs">Sign In</span>}
+        </Button>
+      </Link>
+    );
+  }
+
+  return (
+    <div className={`flex items-center gap-2 ${collapsed ? "justify-center" : "px-1"}`}>
+      {session.user.image ? (
+        <img
+          src={session.user.image}
+          alt=""
+          className="w-7 h-7 rounded-full shrink-0"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <span className="text-xs font-bold text-primary">
+            {session.user.name?.charAt(0)?.toUpperCase() || "U"}
+          </span>
+        </div>
+      )}
+      {!collapsed && (
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-foreground truncate">{session.user.name}</p>
+          <p className="text-[10px] text-muted-foreground truncate">{session.user.email}</p>
+        </div>
+      )}
+      {!collapsed && (
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+          title="Sign out"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+}
 
 function SidebarContent({ pathname, collapsed }: { pathname: string; collapsed?: boolean }) {
   return (
@@ -56,9 +106,12 @@ function SidebarContent({ pathname, collapsed }: { pathname: string; collapsed?:
       </nav>
 
       {/* Footer */}
-      <div className="px-3 pb-4 space-y-2">
-        <ThemeToggle collapsed={collapsed} />
-        <div className={`flex items-center gap-1.5 text-xs text-muted-foreground ${collapsed ? "justify-center" : "px-3"}`}>
+      <div className="px-3 pb-4 space-y-3">
+        <UserSection collapsed={collapsed} />
+        <div className="flex items-center justify-between">
+          <ThemeToggle collapsed={collapsed} />
+        </div>
+        <div className={`flex items-center gap-1.5 text-xs text-muted-foreground ${collapsed ? "justify-center" : "px-1"}`}>
           <Lock className="h-3 w-3 shrink-0" />
           {!collapsed && <span>Encrypted</span>}
         </div>
@@ -69,10 +122,7 @@ function SidebarContent({ pathname, collapsed }: { pathname: string; collapsed?:
 
 function MobileBottomNav({ pathname }: { pathname: string }) {
   return (
-    <nav
-      aria-label="Main navigation"
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
-    >
+    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
       <div className="bg-card border-t border-border backdrop-blur-lg">
         <ul className="flex items-center h-16 px-1" role="list">
           {navItems.map(({ label, href, icon: Icon }) => {
@@ -85,37 +135,19 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
                   aria-current={isActive ? "page" : undefined}
                   className="flex flex-col items-center justify-center gap-1 h-full w-full rounded-xl transition-colors"
                 >
-                  <span
-                    className={[
-                      "flex items-center justify-center w-8 h-8 rounded-xl transition-all",
-                      isActive && isCrisis
-                        ? "bg-destructive/10"
-                        : isActive
-                        ? "bg-primary/10"
-                        : "",
-                    ].join(" ")}
-                  >
-                    <Icon
-                      className={[
-                        "h-5 w-5 transition-colors",
-                        isActive && isCrisis
-                          ? "text-destructive stroke-[2.2px]"
-                          : isActive
-                          ? "text-primary stroke-[2.2px]"
-                          : "text-muted-foreground stroke-[1.6px]",
-                      ].join(" ")}
-                    />
+                  <span className={[
+                    "flex items-center justify-center w-8 h-8 rounded-xl transition-all",
+                    isActive && isCrisis ? "bg-destructive/10" : isActive ? "bg-primary/10" : "",
+                  ].join(" ")}>
+                    <Icon className={[
+                      "h-5 w-5 transition-colors",
+                      isActive && isCrisis ? "text-destructive stroke-[2.2px]" : isActive ? "text-primary stroke-[2.2px]" : "text-muted-foreground stroke-[1.6px]",
+                    ].join(" ")} />
                   </span>
-                  <span
-                    className={[
-                      "text-[10px] font-semibold leading-none",
-                      isActive && isCrisis
-                        ? "text-destructive"
-                        : isActive
-                        ? "text-primary"
-                        : "text-muted-foreground",
-                    ].join(" ")}
-                  >
+                  <span className={[
+                    "text-[10px] font-semibold leading-none",
+                    isActive && isCrisis ? "text-destructive" : isActive ? "text-primary" : "text-muted-foreground",
+                  ].join(" ")}>
                     {label}
                   </span>
                 </Link>
@@ -160,33 +192,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Mobile top bar */}
         <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-card/80 backdrop-blur-sm border-b border-border">
           <div className="flex items-center gap-2.5">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileMenuOpen(true)}
-              className="h-9 w-9"
-            >
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(true)} className="h-9 w-9">
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary shadow-sm">
                 <Shield className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold tracking-tight text-foreground">
-                ShockPlan
-              </span>
+              <span className="text-lg font-bold tracking-tight text-foreground">ShockPlan</span>
             </div>
           </div>
           <ThemeToggle collapsed />
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 pb-20 lg:pb-0">
-          {children}
-        </main>
+        <main className="flex-1 pb-20 lg:pb-0">{children}</main>
       </div>
 
-      {/* Mobile bottom nav */}
       <MobileBottomNav pathname={pathname} />
     </div>
   );
