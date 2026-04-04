@@ -14,42 +14,11 @@ const cached: MongooseCache = global.mongooseCache ?? { conn: null, promise: nul
 global.mongooseCache = cached;
 
 export async function connectToDatabase() {
-  if (cached.conn) {
-    return cached.conn;
-  }
+  if (cached.conn) return cached.conn;
 
   const uri = process.env.MONGODB_URI;
-  if (!uri) {
-    // No MongoDB configured — return a no-op connection sentinel so the app
-    // boots without a database. The in-memory store in models.ts takes over.
-    return null;
-  }
-
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(uri);
-  }
-
-  cached.conn = await cached.promise;
-  return cached.conn;
-}
-
-declare global {
-  // eslint-disable-next-line no-var
-  var mongooseCache: MongooseCache | undefined;
-}
-
-const cached: MongooseCache = global.mongooseCache ?? { conn: null, promise: null };
-global.mongooseCache = cached;
-
-export async function connectToDatabase() {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
-    throw new Error("Please define the MONGODB_URI environment variable in .env.local");
-  }
+  // If no URI is set, return null — routes fall back to the in-memory store.
+  if (!uri) return null;
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(uri);
