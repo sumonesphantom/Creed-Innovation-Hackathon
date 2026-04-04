@@ -50,12 +50,14 @@
 - [x] Encrypted badge in header
 - [x] Action items adapt to profile (no insurance → suggest learning)
 
-### Phase 4: AI Buddy Chat (~2.5 hrs)
-- [ ] Chat UI with message bubbles
-- [ ] Buddy avatar + typing indicator
-- [ ] Quick-action chips
-- [ ] Calls POST /api/buddy with profile context
-- [ ] Messages in React state only (not persisted)
+### Phase 4: AI Buddy Chat (DONE)
+- [x] Chat UI with message bubbles (user + buddy styles)
+- [x] Buddy avatar + typing indicator (animated dots)
+- [x] Quick-action chips (6 pre-built prompts)
+- [x] Calls POST /api/buddy with profile context
+- [x] Messages in React state only (not persisted)
+- [x] Auto-scroll, auto-resize textarea, Enter to send
+- [x] Error handling with fallback messages
 
 ### Phase 5: Deploy + Test (~1 hr)
 - [ ] Push to GitHub
