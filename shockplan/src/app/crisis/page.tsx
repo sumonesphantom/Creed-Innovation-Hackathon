@@ -3,16 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Briefcase, Heart, Car, Home,
-  CloudLightning, ChevronLeft, ChevronRight, MessageCircle, CheckCircle2,
+  Briefcase, Heart, Car, Home, CloudLightning,
+  ChevronLeft, ChevronRight, MessageCircle, CheckCircle2,
+  Clock, CalendarDays, CalendarRange, Zap,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 
-// ─── Crisis Data ───────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = { title: string; description: string };
+type TimelineStep = { title: string; description: string };
+
+type Timeline = {
+  tenMin: TimelineStep[];
+  twentyFourHr: TimelineStep[];
+  sevenDay: TimelineStep[];
+};
 
 type CrisisType = {
   id: string;
@@ -23,8 +30,10 @@ type CrisisType = {
   iconColor: string;
   border: string;
   accent: string;
-  steps: Step[];
+  timeline: Timeline;
 };
+
+// ─── Crisis Data with Timeline Triage ─────────────────────────────────────────
 
 const CRISES: CrisisType[] = [
   {
@@ -36,13 +45,25 @@ const CRISES: CrisisType[] = [
     iconColor: "text-amber-600 dark:text-amber-400",
     border: "border-amber-200 dark:border-amber-800",
     accent: "text-amber-700 dark:text-amber-300",
-    steps: [
-      { title: "File for unemployment benefits", description: "Apply online at your state's unemployment website within 1 week of losing your job. You may be eligible for partial income replacement while you search for work." },
-      { title: "Notify your landlord or mortgage servicer", description: "Call them now — most have hardship programs. Getting ahead of it gives you more options and can prevent eviction or foreclosure proceedings." },
-      { title: "Pause non-essential subscriptions", description: "Cancel or pause streaming, gym, and app subscriptions right away to conserve cash while you look for work." },
-      { title: "Check SNAP and food assistance eligibility", description: "Loss of income often qualifies you for food stamps (SNAP). Apply at benefits.gov or your local DHS office." },
-      { title: "Rebuild your network and job search", description: "Let friends, former coworkers, and community members know you are looking. Most jobs are found through people you already know." },
-    ],
+    timeline: {
+      tenMin: [
+        { title: "Breathe — you will get through this", description: "Take 5 minutes. This is a shock, and it's okay to feel overwhelmed. Don't make any big decisions right now." },
+        { title: "Save any termination documents", description: "Screenshot or photograph your termination letter, final pay stub, and benefits info before you lose access to company systems." },
+        { title: "Check your last paycheck date", description: "Know when your final paycheck and any severance will arrive. Ask HR in writing if unclear." },
+      ],
+      twentyFourHr: [
+        { title: "File for unemployment benefits", description: "Apply online at your state's unemployment website. You may be eligible for partial income replacement while you search." },
+        { title: "Review your health insurance options", description: "You have 60 days for COBRA, but it's expensive. Check Healthcare.gov for marketplace plans — job loss is a qualifying event." },
+        { title: "Pause non-essential subscriptions", description: "Cancel or pause streaming, gym, and app subscriptions to conserve cash immediately." },
+        { title: "Notify your landlord or mortgage servicer", description: "Call them now — most have hardship programs. Getting ahead of it prevents eviction or foreclosure." },
+      ],
+      sevenDay: [
+        { title: "Check SNAP and food assistance eligibility", description: "Loss of income often qualifies you for food stamps (SNAP). Apply at benefits.gov or your local DHS office." },
+        { title: "Create an emergency budget", description: "Use ShockPlan's budget tool to see exactly where your money needs to go. Cut to essentials only." },
+        { title: "Rebuild your network and start job searching", description: "Let friends, former coworkers, and community members know. Most jobs are found through people you already know." },
+        { title: "Look into retraining or certification programs", description: "Many states offer free career training for displaced workers. Check your state workforce agency." },
+      ],
+    },
   },
   {
     id: "medical-bills",
@@ -53,13 +74,24 @@ const CRISES: CrisisType[] = [
     iconColor: "text-red-600 dark:text-red-400",
     border: "border-red-200 dark:border-red-800",
     accent: "text-red-700 dark:text-red-300",
-    steps: [
-      { title: "Request an itemized bill", description: "Ask the hospital billing department for a line-by-line breakdown. Errors are common and can total hundreds or thousands of dollars." },
-      { title: "Ask about financial assistance programs", description: "Hospitals that receive federal funding are required to offer charity care. Ask specifically for the 'financial assistance' or 'charity care' application." },
-      { title: "Negotiate a payment plan", description: "Most providers will set up a 0% interest payment plan. Even $25/month keeps accounts from going to collections." },
-      { title: "Check if you qualify for Medicaid retroactively", description: "In many states, Medicaid can cover bills from up to 3 months before your application date. Apply even if you think you earn too much." },
-      { title: "Contact a medical billing advocate", description: "Nonprofit patient advocates and hospital social workers can negotiate on your behalf for free. Ask to speak to a patient advocate." },
-    ],
+    timeline: {
+      tenMin: [
+        { title: "Don't panic — medical debt is negotiable", description: "Unlike most debt, medical bills can almost always be reduced, put on payment plans, or forgiven entirely." },
+        { title: "Do NOT put it on a credit card", description: "Hospital payment plans are usually 0% interest. Credit cards are 20%+. Keep your options open." },
+        { title: "Save all documents and bills", description: "Photograph or scan every bill, EOB (Explanation of Benefits), and correspondence. You'll need these." },
+      ],
+      twentyFourHr: [
+        { title: "Request an itemized bill", description: "Call billing and ask for a line-by-line breakdown. Errors are common and can total hundreds or thousands." },
+        { title: "Ask about financial assistance programs", description: "Hospitals receiving federal funding must offer charity care. Ask for the 'financial assistance' application." },
+        { title: "Check if you qualify for Medicaid retroactively", description: "In many states, Medicaid covers bills from up to 3 months before your application. Apply even if you think you earn too much." },
+      ],
+      sevenDay: [
+        { title: "Negotiate a payment plan", description: "Most providers will set up a 0% interest plan. Even $25/month keeps accounts from going to collections." },
+        { title: "Contact a medical billing advocate", description: "Nonprofit patient advocates can negotiate on your behalf for free. Ask to speak to a patient advocate at the hospital." },
+        { title: "Review your insurance EOB carefully", description: "Compare the hospital bill to your insurance EOB. Discrepancies are common and can save you hundreds." },
+        { title: "Look into medical debt forgiveness programs", description: "Organizations like RIP Medical Debt and Dollar For help eliminate medical debt for qualifying patients." },
+      ],
+    },
   },
   {
     id: "car-accident",
@@ -70,13 +102,24 @@ const CRISES: CrisisType[] = [
     iconColor: "text-blue-600 dark:text-blue-400",
     border: "border-blue-200 dark:border-blue-800",
     accent: "text-blue-700 dark:text-blue-300",
-    steps: [
-      { title: "File a police report if you haven't yet", description: "A police report is required by most insurance companies and may be needed if there is any dispute about fault." },
-      { title: "Notify your insurance company within 24 hours", description: "Call your insurer's claims line immediately. Delays can complicate or reduce your claim payout." },
-      { title: "Document everything with photos", description: "Photograph the damage, the scene, and any injuries. Keep all medical receipts, tow receipts, and rental car records together." },
-      { title: "Ask about rental car or transportation aid", description: "Your auto policy may cover a rental while your car is being repaired. Check your policy or ask your claims adjuster." },
-      { title: "Seek a medical evaluation even if you feel okay", description: "Some injuries like whiplash appear days later. A documented medical visit protects you both legally and health-wise." },
-    ],
+    timeline: {
+      tenMin: [
+        { title: "Check for injuries — call 911 if needed", description: "Your safety comes first. If anyone is hurt, call 911 immediately. Move to a safe location if possible." },
+        { title: "Document the scene with photos", description: "Photograph all vehicle damage, the scene, license plates, insurance cards, and any visible injuries." },
+        { title: "Exchange information with the other driver", description: "Get their name, phone, insurance company, policy number, and driver's license number. Give them yours." },
+      ],
+      twentyFourHr: [
+        { title: "File a police report", description: "A police report is required by most insurers and protects you in fault disputes. Get the report number." },
+        { title: "Notify your insurance company", description: "Call your insurer's claims line. Delays can complicate or reduce your payout." },
+        { title: "Seek medical evaluation even if you feel okay", description: "Whiplash and concussions can appear days later. A documented visit protects you legally and health-wise." },
+      ],
+      sevenDay: [
+        { title: "Get repair estimates", description: "Get 2-3 estimates from certified body shops. Your insurer may have preferred shops but you have the right to choose." },
+        { title: "Ask about rental car coverage", description: "Your auto policy may cover a rental while your car is repaired. Check with your claims adjuster." },
+        { title: "Track all expenses and lost wages", description: "Keep receipts for everything: towing, rental car, medical visits, missed work. These are all claimable." },
+        { title: "Don't accept a quick settlement", description: "Insurance companies may offer a fast lowball settlement. Wait until you know the full extent of damage and injuries." },
+      ],
+    },
   },
   {
     id: "eviction",
@@ -87,13 +130,24 @@ const CRISES: CrisisType[] = [
     iconColor: "text-purple-600 dark:text-purple-400",
     border: "border-purple-200 dark:border-purple-800",
     accent: "text-purple-700 dark:text-purple-300",
-    steps: [
-      { title: "Do not ignore the notice — respond in writing", description: "You have legal rights. Responding in writing to your landlord creates a paper trail and often buys you critical time." },
-      { title: "Contact an eviction legal aid clinic immediately", description: "Many cities offer free legal help for tenants facing eviction. Search 'eviction help [your city]' or call 211." },
-      { title: "Apply for emergency rental assistance", description: "Federal and local emergency rental assistance programs (ERAP) can pay past-due rent directly to landlords. Apply at your local housing authority." },
-      { title: "Review your lease for landlord violations", description: "If your landlord failed to make repairs or gave improper notice, you may have grounds to pause or dismiss the eviction." },
-      { title: "Arrange a temporary housing backup", description: "Reach out to family, friends, or local shelters now — not as a last resort. Having a plan reduces panic and keeps you safer." },
-    ],
+    timeline: {
+      tenMin: [
+        { title: "Read the notice carefully — know your rights", description: "An eviction notice is NOT the same as an eviction. You have legal rights and time to respond. Don't leave yet." },
+        { title: "Note the deadline and type of notice", description: "Is it 'pay or quit'? 'Cure or quit'? 'Unconditional quit'? The type determines your options and timeline." },
+        { title: "Photograph the notice and your unit's condition", description: "Document everything. If your landlord hasn't maintained the unit, that may be relevant to your defense." },
+      ],
+      twentyFourHr: [
+        { title: "Respond in writing to your landlord", description: "A written response creates a paper trail and often buys critical time. Keep a copy of everything." },
+        { title: "Contact an eviction legal aid clinic", description: "Many cities offer free legal help for tenants. Search 'eviction help [your city]' or call 211." },
+        { title: "Apply for emergency rental assistance", description: "ERAP programs can pay past-due rent directly to landlords. Apply at your local housing authority immediately." },
+      ],
+      sevenDay: [
+        { title: "Review your lease for landlord violations", description: "If your landlord failed to make repairs or gave improper notice, you may have grounds to pause the eviction." },
+        { title: "Gather evidence of payments and communications", description: "Bank statements, receipts, text messages, emails — anything showing your payment history or landlord's failures." },
+        { title: "Arrange a temporary housing backup plan", description: "Reach out to family, friends, or local shelters now — not as a last resort. Having a plan reduces panic." },
+        { title: "Attend your court date — do NOT skip it", description: "If you don't show up, the judge will rule against you automatically. Show up, even if you can't afford a lawyer." },
+      ],
+    },
   },
   {
     id: "natural-disaster",
@@ -104,25 +158,41 @@ const CRISES: CrisisType[] = [
     iconColor: "text-yellow-600 dark:text-yellow-400",
     border: "border-yellow-200 dark:border-yellow-800",
     accent: "text-yellow-700 dark:text-yellow-300",
-    steps: [
-      { title: "Confirm your household is physically safe", description: "Do not return to a damaged home until cleared by authorities. Carbon monoxide, gas leaks, and structural damage can be invisible." },
-      { title: "Apply for FEMA disaster assistance", description: "Go to DisasterAssistance.gov or call 1-800-621-FEMA. You may qualify for rental assistance, home repair funds, and crisis counseling." },
-      { title: "File a homeowners or renters insurance claim", description: "Call your insurer's 24/7 claims line. Take photos or video of all damage before any cleanup or repairs begin." },
-      { title: "Register with local emergency management", description: "Local emergency managers can connect you with food, water, temporary shelter, and recovery resources specific to your area." },
-      { title: "Watch out for contractor scams", description: "Predatory contractors target disaster areas. Verify licenses, get multiple estimates, and never pay the full amount upfront." },
-    ],
+    timeline: {
+      tenMin: [
+        { title: "Confirm your household is physically safe", description: "Do not return to a damaged home until cleared by authorities. Gas leaks and structural damage can be invisible." },
+        { title: "Account for all family members", description: "Text or call everyone. If someone is missing, contact local emergency services immediately." },
+        { title: "Grab essential documents if safely accessible", description: "IDs, insurance cards, medications. Only if it's safe — documents can be replaced, you cannot." },
+      ],
+      twentyFourHr: [
+        { title: "Apply for FEMA disaster assistance", description: "Go to DisasterAssistance.gov or call 1-800-621-FEMA. You may qualify for rental aid, home repair funds, and crisis counseling." },
+        { title: "File a homeowners or renters insurance claim", description: "Call your insurer's 24/7 claims line. Take photos/video of ALL damage before any cleanup begins." },
+        { title: "Register with local emergency management", description: "They connect you with food, water, temporary shelter, and recovery resources specific to your area." },
+      ],
+      sevenDay: [
+        { title: "Document all damage thoroughly", description: "Photograph and video everything. Make detailed lists of damaged items with estimated values for insurance claims." },
+        { title: "Watch out for contractor scams", description: "Predatory contractors target disaster areas. Verify licenses, get multiple estimates, never pay full amount upfront." },
+        { title: "Apply for SBA disaster loans if needed", description: "The Small Business Administration offers low-interest disaster loans to homeowners, renters, and businesses." },
+        { title: "Check for local and state disaster relief programs", description: "Many states and cities offer additional grants, temporary housing, and utility assistance after declared disasters." },
+      ],
+    },
   },
 ];
 
-// ─── Crisis Card ─────────────────────────────────────────────────────────────
+// ─── Timeline Tab Labels ──────────────────────────────────────────────────────
+
+const TIMELINE_TABS = [
+  { key: "tenMin" as const, label: "First 10 min", shortLabel: "10 min", icon: Zap, description: "Do these right now" },
+  { key: "twentyFourHr" as const, label: "First 24 hours", shortLabel: "24 hrs", icon: Clock, description: "Handle today" },
+  { key: "sevenDay" as const, label: "First 7 days", shortLabel: "7 days", icon: CalendarRange, description: "This week" },
+];
+
+// ─── Crisis Card ──────────────────────────────────────────────────────────────
 
 function CrisisCard({ crisis, onSelect }: { crisis: CrisisType; onSelect: (c: CrisisType) => void }) {
   const { Icon } = crisis;
   return (
-    <button
-      onClick={() => onSelect(crisis)}
-      className="w-full text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
-    >
+    <button onClick={() => onSelect(crisis)} className="w-full text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
       <Card className={`${crisis.border} rounded-2xl transition-all group-hover:shadow-md group-active:scale-[0.99] bg-card`}>
         <CardContent className="flex items-center gap-4 p-4">
           <div className={`flex items-center justify-center w-11 h-11 rounded-xl shrink-0 ${crisis.iconBg}`}>
@@ -139,19 +209,34 @@ function CrisisCard({ crisis, onSelect }: { crisis: CrisisType; onSelect: (c: Cr
   );
 }
 
-// ─── Step List ─────────────────────────────────────────────────────────────────
+// ─── Timeline Triage View ─────────────────────────────────────────────────────
 
-function StepList({ crisis, onBack }: { crisis: CrisisType; onBack: () => void }) {
-  const [checked, setChecked] = useState<boolean[]>(() => Array(crisis.steps.length).fill(false));
+function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => void }) {
+  const [activeTab, setActiveTab] = useState<"tenMin" | "twentyFourHr" | "sevenDay">("tenMin");
+  const [checked, setChecked] = useState<Record<string, boolean[]>>({
+    tenMin: Array(crisis.timeline.tenMin.length).fill(false),
+    twentyFourHr: Array(crisis.timeline.twentyFourHr.length).fill(false),
+    sevenDay: Array(crisis.timeline.sevenDay.length).fill(false),
+  });
+
   const { Icon } = crisis;
-  const doneCount = checked.filter(Boolean).length;
+  const steps = crisis.timeline[activeTab];
+  const currentChecked = checked[activeTab];
+  const doneCount = currentChecked.filter(Boolean).length;
+
+  const totalDone = Object.values(checked).flat().filter(Boolean).length;
+  const totalSteps = Object.values(crisis.timeline).flat().length;
 
   function toggle(i: number) {
-    setChecked((prev) => { const next = [...prev]; next[i] = !next[i]; return next; });
+    setChecked((prev) => ({
+      ...prev,
+      [activeTab]: prev[activeTab].map((v, idx) => (idx === i ? !v : v)),
+    }));
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-5 w-full">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
@@ -164,22 +249,65 @@ function StepList({ crisis, onBack }: { crisis: CrisisType; onBack: () => void }
         </div>
         <div>
           <p className="font-bold text-foreground text-sm">{crisis.label}</p>
-          <p className="text-xs text-muted-foreground">{doneCount} of {crisis.steps.length} steps done</p>
+          <p className="text-xs text-muted-foreground">{totalDone} of {totalSteps} total steps done</p>
         </div>
       </div>
 
+      {/* Overall progress */}
       <div className="h-1.5 w-full rounded-full overflow-hidden bg-border">
-        <div
-          className="h-full rounded-full transition-all duration-500 bg-primary"
-          style={{ width: `${(doneCount / crisis.steps.length) * 100}%` }}
-        />
+        <div className="h-full rounded-full transition-all duration-500 bg-primary" style={{ width: `${(totalDone / totalSteps) * 100}%` }} />
       </div>
 
-      <ol className="flex flex-col gap-3">
-        {crisis.steps.map((step, i) => {
-          const done = checked[i];
+      {/* Timeline Tabs */}
+      <div className="grid grid-cols-3 gap-2">
+        {TIMELINE_TABS.map(({ key, label, shortLabel, icon: TabIcon, description }) => {
+          const isActive = activeTab === key;
+          const tabSteps = crisis.timeline[key];
+          const tabDone = checked[key].filter(Boolean).length;
+          const tabComplete = tabDone === tabSteps.length;
+
           return (
-            <li key={i}>
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={[
+                "flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center transition-all border",
+                isActive
+                  ? `${crisis.border} bg-card shadow-sm`
+                  : "border-transparent hover:bg-accent",
+              ].join(" ")}
+            >
+              <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? crisis.iconBg : "bg-muted"}`}>
+                {tabComplete ? (
+                  <CheckCircle2 className={`h-4 w-4 ${isActive ? crisis.iconColor : "text-green-500"}`} />
+                ) : (
+                  <TabIcon className={`h-4 w-4 ${isActive ? crisis.iconColor : "text-muted-foreground"}`} />
+                )}
+              </div>
+              <span className={`text-xs font-bold ${isActive ? crisis.accent : "text-muted-foreground"}`}>
+                <span className="hidden sm:inline">{label}</span>
+                <span className="sm:hidden">{shortLabel}</span>
+              </span>
+              <span className="text-[10px] text-muted-foreground hidden sm:block">{description}</span>
+              <span className="text-[10px] text-muted-foreground tabular-nums">{tabDone}/{tabSteps.length}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active tab description */}
+      <div className={`rounded-xl px-4 py-2.5 ${crisis.iconBg}`}>
+        <p className={`text-xs font-bold ${crisis.accent}`}>
+          {TIMELINE_TABS.find((t) => t.key === activeTab)?.description} — {doneCount} of {steps.length} done
+        </p>
+      </div>
+
+      {/* Steps */}
+      <ol className="flex flex-col gap-3">
+        {steps.map((step, i) => {
+          const done = currentChecked[i];
+          return (
+            <li key={`${activeTab}-${i}`}>
               <button onClick={() => toggle(i)} className="w-full text-left group rounded-2xl">
                 <Card className={`${done ? crisis.border : "border-border"} rounded-2xl transition-all bg-card`}>
                   <CardContent className="flex items-start gap-4 p-4">
@@ -193,7 +321,7 @@ function StepList({ crisis, onBack }: { crisis: CrisisType; onBack: () => void }
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-bold leading-snug ${done ? "line-through opacity-40" : crisis.accent}`}>
+                      <p className={`text-sm font-bold leading-snug ${done ? "line-through opacity-40 text-foreground" : crisis.accent}`}>
                         {step.title}
                       </p>
                       {!done && (
@@ -210,10 +338,11 @@ function StepList({ crisis, onBack }: { crisis: CrisisType; onBack: () => void }
         })}
       </ol>
 
-      <Link href="/buddy" className="block w-full mt-1">
+      {/* Talk to Buddy */}
+      <Link href={`/buddy`} className="block w-full mt-1">
         <Button className="w-full h-12 text-sm font-bold rounded-2xl gap-2.5">
           <MessageCircle className="h-4 w-4" />
-          Talk to my Buddy
+          Talk to my Buddy about {crisis.label.toLowerCase()}
         </Button>
       </Link>
       <p className="text-center text-xs text-muted-foreground pb-1">
@@ -223,7 +352,7 @@ function StepList({ crisis, onBack }: { crisis: CrisisType; onBack: () => void }
   );
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CrisisPage() {
   const [selected, setSelected] = useState<CrisisType | null>(null);
@@ -254,7 +383,7 @@ export default function CrisisPage() {
           </>
         ) : (
           <div className="max-w-2xl">
-            <StepList crisis={selected} onBack={() => setSelected(null)} />
+            <TimelineTriage crisis={selected} onBack={() => setSelected(null)} />
           </div>
         )}
       </div>

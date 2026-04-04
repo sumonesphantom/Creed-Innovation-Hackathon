@@ -88,17 +88,33 @@
 - [ ] **TODO: Push to GitHub + deploy to Vercel with env vars**
 - [ ] **TODO: Add production callback URL to Google OAuth**
 
-### Phase 6: Crisis Event Flows (~2.5 hrs)
-- [ ] Crisis data JSON for 4 events
-- [ ] Event selection grid
-- [ ] Timeline triage view (10min/24hr/7day)
-- [ ] "Talk to Buddy" integration
+### Phase 6: Crisis Event Flows (DONE)
+- [x] Crisis data for 5 events (job loss, medical bills, car accident, eviction, natural disaster)
+- [x] Event selection grid (2-column on desktop, dark mode compatible)
+- [x] Timeline triage view with 3 tabs: First 10 min / First 24 hrs / First 7 days
+- [x] Per-tab step checklist with progress tracking
+- [x] Overall progress bar across all timeline phases
+- [x] Tab completion indicators (checkmark when all steps done)
+- [x] "Talk to Buddy" integration (context-aware link per crisis type)
+- [x] Responsive design with short labels on mobile, full labels on desktop
 
 ### Phase 7: Emergency Budget Reset (~2 hrs)
 - [ ] Normal + crisis mode budget calculator
 - [ ] Bill priority ranker
 - [ ] Cash flow timeline
 - [ ] "What if" toggles
+
+### Phase 7.5: Flow of Life — Visual Path Planner (~3 hrs)
+- [ ] Interactive timeline/flow canvas where users map out their financial life path
+- [ ] Branching decision nodes (e.g., "Keep current job" vs "Switch careers" vs "Go back to school")
+- [ ] Each branch shows projected financial impact (savings, expenses, timeline to stability)
+- [ ] Visual flow lines connecting life events with color-coded outcomes (green = stable, yellow = risky, red = crisis)
+- [ ] "What-if" alternate path exploration — see how different choices play out over 6mo/1yr/5yr
+- [ ] Pre-built templates: "Recovering from job loss", "Building first emergency fund", "Getting out of debt"
+- [ ] Integration with Buddy — ask AI to suggest paths based on your profile
+- [ ] Drag-and-drop or tap-to-add life events (new job, baby, move, medical event, etc.)
+- [ ] Timeline zoom: month view, year view, 5-year view
+- [ ] Share/export path as image for accountability
 
 ### Phase 8: Data Safety + My Data Page (~1.5 hrs)
 - [ ] My Data page: view/export/delete
