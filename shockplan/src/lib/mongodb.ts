@@ -14,11 +14,14 @@ const cached: MongooseCache = global.mongooseCache ?? { conn: null, promise: nul
 global.mongooseCache = cached;
 
 export async function connectToDatabase() {
-  if (cached.conn) return cached.conn;
+  if (cached.conn) {
+    return cached.conn;
+  }
 
   const uri = process.env.MONGODB_URI;
-  // If no URI is set, return null — routes fall back to the in-memory store.
-  if (!uri) return null;
+  if (!uri) {
+    throw new Error("Please define the MONGODB_URI environment variable in .env.local");
+  }
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(uri);
