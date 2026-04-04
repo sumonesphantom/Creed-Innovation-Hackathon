@@ -1,13 +1,13 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function LandingHeader() {
-  const { data: session } = useSession();
+  const { user } = useUser();
 
   return (
     <header className="w-full flex items-center justify-between px-6 lg:px-12 py-4 bg-background/80 backdrop-blur-sm sticky top-0 z-10 border-b border-border/50">
@@ -21,7 +21,7 @@ export function LandingHeader() {
       </div>
       <div className="flex items-center gap-3">
         <ThemeToggle />
-        {session?.user ? (
+        {user ? (
           <Link href="/dashboard">
             <Button size="sm" className="rounded-xl">
               Dashboard

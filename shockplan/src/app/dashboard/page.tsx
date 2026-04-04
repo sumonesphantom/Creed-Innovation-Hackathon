@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import {
   AlertTriangle, BookOpen, FileText, Umbrella,
   Lightbulb, ChevronRight,
@@ -177,8 +177,8 @@ function ActionItems() {
 // ─── Page ─────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
-  const firstName = session?.user?.name?.split(" ")[0];
+  const { user } = useUser();
+  const firstName = user?.name?.split(" ")[0];
 
   return (
     <AppShell>

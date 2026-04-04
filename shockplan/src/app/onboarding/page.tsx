@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,7 +49,7 @@ interface ProfileData {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { user } = useUser();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
@@ -130,7 +130,7 @@ export default function OnboardingPage() {
       {/* Content — centered card on desktop */}
       <main className="flex flex-1 flex-col items-center px-4 sm:px-6 lg:px-8 py-4">
         <div className="w-full max-w-3xl">
-          {step === 0 && <WelcomeStep userName={session?.user?.name} />}
+          {step === 0 && <WelcomeStep userName={user?.name} />}
           {step === 1 && (
             <SelectStep
               title="Who's in your household?"

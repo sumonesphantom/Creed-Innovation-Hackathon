@@ -6,7 +6,7 @@ const UserSchema = new Schema({
   email: { type: String, required: true, unique: true, index: true },
   name: { type: String, default: "" },
   image: { type: String, default: "" },
-  provider: { type: String, default: "google" },
+  provider: { type: String, default: "auth0" },
   providerId: { type: String, default: "" },
   deviceId: { type: String, default: "", index: true },
   createdAt: { type: Date, default: Date.now },

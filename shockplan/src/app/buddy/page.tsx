@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { Send, Shield, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
@@ -70,19 +70,29 @@ function MessageBubble({ message }: { message: Message }) {
 }
 
 export default function BuddyPage() {
-  const { data: session } = useSession();
-  const firstName = session?.user?.name?.split(" ")[0];
+  const { user } = useUser();
+  const firstName = user?.name?.split(" ")[0];
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "buddy",
-      content: firstName
-        ? `Hey ${firstName}! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?`
-        : "Hey! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?",
+      content:
+        "Hey! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?",
       timestamp: new Date(),
     },
   ]);
+
+  useEffect(() => {
+    if (!firstName) return;
+    setMessages((prev) => {
+      const w = prev[0];
+      if (!w || w.id !== "welcome") return prev;
+      const personalized = `Hey ${firstName}! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?`;
+      if (w.content === personalized) return prev;
+      return [{ ...w, content: personalized }, ...prev.slice(1)];
+    });
+  }, [firstName]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);

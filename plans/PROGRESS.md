@@ -73,20 +73,20 @@
 - [x] Error handling with fallback messages
 
 ### Phase 5: Auth + Deploy (DONE)
-- [x] Google OAuth via NextAuth.js v5 (next-auth@beta)
+- [x] Auth0 via `@auth0/nextjs-auth0` (Auth0Client + middleware; `/auth/login`, `/auth/callback`, `/auth/logout`)
 - [x] User model in MongoDB (email, name, image, provider)
-- [x] Sign-in page with Google OAuth + anonymous fallback
-- [x] Session provider wrapping entire app
+- [x] Sign-in page with Auth0 Universal Login + anonymous fallback
+- [x] Auth0 provider wrapping entire app (`Auth0Provider` via `SessionProvider` wrapper)
 - [x] Personalized greetings (dashboard, buddy, onboarding) using session name
 - [x] User avatar + sign-out in sidebar
 - [x] API routes updated: profile, buddy, score all support userId (auth) + deviceId (anonymous)
 - [x] Profile migration: anonymous deviceId profiles auto-link to user account on sign-in
 - [x] Landing page shows Sign In / Dashboard based on auth state
-- [x] `.env.local.example` updated with AUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
-- [ ] **TODO: Set up Google Cloud OAuth credentials**
-- [ ] **TODO: Add AUTH_SECRET to `.env.local`**
+- [x] `.env.local.example` updated with AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_SECRET, APP_BASE_URL
+- [ ] **TODO: Create Auth0 Regular Web Application + set callback/logout URLs**
+- [ ] **TODO: Add Auth0 env vars to `.env.local`**
 - [ ] **TODO: Push to GitHub + deploy to Vercel with env vars**
-- [ ] **TODO: Add production callback URL to Google OAuth**
+- [ ] **TODO: Add production callback URL to Auth0 application**
 
 ### Phase 6: Crisis Event Flows (DONE)
 - [x] Crisis data for 5 events (job loss, medical bills, car accident, eviction, natural disaster)

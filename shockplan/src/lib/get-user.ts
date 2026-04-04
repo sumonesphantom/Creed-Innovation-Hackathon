@@ -1,4 +1,4 @@
-import { auth } from "./auth";
+import { auth0 } from "./auth0";
 import { connectToDatabase } from "./mongodb";
 import { User } from "./models";
 
@@ -8,11 +8,26 @@ import { User } from "./models";
  * deviceId is the fallback from the request body/params.
  */
 export async function getUserIdentifier(requestDeviceId?: string) {
-  const session = await auth();
+  const session = await auth0.getSession();
 
   if (session?.user?.email) {
     await connectToDatabase();
-    const dbUser = await User.findOne({ email: session.user.email });
+    let dbUser = await User.findOne({ email: session.user.email });
+    if (!dbUser) {
+      await User.findOneAndUpdate(
+        { email: session.user.email },
+        {
+          email: session.user.email,
+          name: session.user.name,
+          image: session.user.picture ?? "",
+          provider: "auth0",
+          providerId: session.user.sub ?? "",
+          lastLoginAt: new Date(),
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      dbUser = await User.findOne({ email: session.user.email });
+    }
     if (dbUser) {
       return {
         userId: dbUser._id.toString(),
