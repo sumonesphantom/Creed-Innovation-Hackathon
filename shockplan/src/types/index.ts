@@ -38,6 +38,13 @@ export interface ReadinessScore {
   calculatedAt: Date;
 }
 
+export interface BuddyChatMessage {
+  id: string;
+  role: "user" | "buddy";
+  content: string;
+  createdAt: Date;
+}
+
 export interface CommunityPost {
   _id?: string;
   crisisType: string;
@@ -76,6 +83,102 @@ export interface BudgetItem {
   category: string;
   amount: number;
   priority: "essential" | "important" | "deferrable" | "cuttable";
+}
+
+export type BudgetMode = "normal" | "crisis";
+
+export interface BudgetBillLine {
+  id: string;
+  label: string;
+  amount: number;
+}
+
+export type BudgetBucketName = "payFirst" | "defer" | "cut";
+
+export interface BudgetBucketGroup {
+  bucket: BudgetBucketName;
+  billIds: string[];
+}
+
+export interface BudgetWeekProjection {
+  week: number;
+  balanceEnd: number;
+}
+
+export interface BudgetNormalBreakdown {
+  housing: number;
+  food: number;
+  transport: number;
+  medical: number;
+  other: number;
+}
+
+export interface BudgetCalculationInput {
+  mode: BudgetMode;
+  deviceId?: string;
+  monthlyIncome: number;
+  normalExpenses?: BudgetNormalBreakdown;
+  cashOnHand?: number;
+  bills?: BudgetBillLine[];
+  billOrder?: string[];
+  skippedBillIds?: string[];
+  extraIncomeWeekly?: number;
+  timelineWeeks?: number;
+}
+
+export interface BudgetCalculationResult {
+  mode: BudgetMode;
+  monthlyIncome: number;
+  totalExpenses: number;
+  remaining: number;
+  categoryPercents: { key: keyof BudgetNormalBreakdown; label: string; percent: number; amount: number }[];
+  crisis?: {
+    cashOnHand: number;
+    buckets: BudgetBucketGroup[];
+    payFirstMonthly: number;
+    weeklyEssentialBurn: number;
+    runwayDays: number | null;
+    runwayWeeks: number | null;
+    weeklyNetOutflow: number;
+    weeks: BudgetWeekProjection[];
+  };
+}
+
+export type PathRiskLevel = "stable" | "risky" | "crisis";
+
+export type LifePathNodeType = "root" | "decision" | "outcome";
+
+export interface LifePathNodeDef {
+  id: string;
+  type: LifePathNodeType;
+  label: string;
+  monthlyIncomeDelta: number;
+  monthlyExpenseDelta: number;
+  monthsToStability: number;
+}
+
+export interface LifePathEdgeDef {
+  id: string;
+  from: string;
+  to: string;
+  risk: PathRiskLevel;
+}
+
+export interface LifePathTemplate {
+  id: string;
+  title: string;
+  description: string;
+  nodes: LifePathNodeDef[];
+  edges: LifePathEdgeDef[];
+}
+
+export interface LifePathExtraEvent {
+  id: string;
+  label: string;
+  monthlyIncomeDelta: number;
+  monthlyExpenseDelta: number;
+  monthsToStability: number;
+  risk: PathRiskLevel;
 }
 
 export interface ChatMessage {

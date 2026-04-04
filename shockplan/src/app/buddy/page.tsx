@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { Send, Shield, Sparkles } from "lucide-react";
+import { Send, Shield, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 
@@ -69,26 +70,82 @@ function MessageBubble({ message }: { message: Message }) {
   );
 }
 
-export default function BuddyPage() {
+function getWelcomeMessage(firstName?: string) {
+  return firstName
+    ? `Hey ${firstName}! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?`
+    : `Hey! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?`;
+}
+
+function BuddyChatInner() {
   const { user } = useUser();
   const firstName = user?.name?.split(" ")[0];
+  const searchParams = useSearchParams();
+  const crisisContextRef = useRef<string | undefined>(undefined);
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "buddy",
-      content:
-        "Hey! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?",
-      timestamp: new Date(),
-    },
-  ]);
+  useEffect(() => {
+    const c = searchParams.get("context");
+    crisisContextRef.current = c || undefined;
+  }, [searchParams]);
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [historyReady, setHistoryReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const deviceId = typeof window !== "undefined" ? localStorage.getItem("shockplan_device_id") || "" : "";
+      try {
+        const res = await fetch(`/api/buddy?deviceId=${encodeURIComponent(deviceId)}`);
+        const data = await res.json();
+        const raw = data.messages ?? [];
+        const list: Message[] = raw.map(
+          (m: { id: string; role: string; content: string; createdAt: string }) => ({
+            id: m.id,
+            role: m.role as "user" | "buddy",
+            content: m.content,
+            timestamp: new Date(m.createdAt),
+          })
+        );
+        if (!cancelled) {
+          if (list.length > 0) {
+            setMessages(list);
+          } else {
+            setMessages([
+              {
+                id: "welcome",
+                role: "buddy",
+                content: getWelcomeMessage(undefined),
+                timestamp: new Date(),
+              },
+            ]);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setMessages([
+            {
+              id: "welcome",
+              role: "buddy",
+              content: getWelcomeMessage(undefined),
+              timestamp: new Date(),
+            },
+          ]);
+        }
+      } finally {
+        if (!cancelled) setHistoryReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!firstName) return;
     setMessages((prev) => {
       const w = prev[0];
       if (!w || w.id !== "welcome") return prev;
-      const personalized = `Hey ${firstName}! I'm your ShockPlan Buddy. I'm here to help you navigate financial challenges — no judgment, just real talk. What's on your mind?`;
+      const personalized = getWelcomeMessage(firstName);
       if (w.content === personalized) return prev;
       return [{ ...w, content: personalized }, ...prev.slice(1)];
     });
@@ -106,8 +163,30 @@ export default function BuddyPage() {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  const clearChat = async () => {
+    if (isLoading || !historyReady) return;
+    const deviceId = localStorage.getItem("shockplan_device_id") || "";
+    try {
+      await fetch("/api/buddy", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deviceId }),
+      });
+    } catch {
+      return;
+    }
+    setMessages([
+      {
+        id: "welcome",
+        role: "buddy",
+        content: getWelcomeMessage(firstName),
+        timestamp: new Date(),
+      },
+    ]);
+  };
+
   const sendMessage = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+    if (!text.trim() || isLoading || !historyReady) return;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -131,26 +210,89 @@ export default function BuddyPage() {
       const res = await fetch("/api/buddy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text.trim(), deviceId }),
+        body: JSON.stringify({
+          message: text.trim(),
+          deviceId,
+          crisisContext: crisisContextRef.current,
+        }),
       });
 
-      let buddyText: string;
-      if (res.ok) {
-        const data = await res.json();
-        buddyText = data.response;
-      } else {
-        buddyText =
+      if (!res.ok) {
+        const fallback =
           "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.";
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `buddy-${Date.now()}`,
+            role: "buddy",
+            content: fallback,
+            timestamp: new Date(),
+          },
+        ]);
+        return;
       }
 
-      const buddyMessage: Message = {
-        id: `buddy-${Date.now()}`,
-        role: "buddy",
-        content: buddyText,
-        timestamp: new Date(),
-      };
+      const body = res.body;
+      if (!body) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `buddy-${Date.now()}`,
+            role: "buddy",
+            content:
+              "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.",
+            timestamp: new Date(),
+          },
+        ]);
+        return;
+      }
 
-      setMessages((prev) => [...prev, buddyMessage]);
+      const reader = body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+      let buddyId: string | null = null;
+
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          accumulated += decoder.decode(value, { stream: true });
+          if (!buddyId) {
+            buddyId = `buddy-${Date.now()}`;
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: buddyId!,
+                role: "buddy",
+                content: accumulated,
+                timestamp: new Date(),
+              },
+            ]);
+            setIsLoading(false);
+          } else {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === buddyId ? { ...m, content: accumulated } : m
+              )
+            );
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+
+      if (!buddyId) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `buddy-${Date.now()}`,
+            role: "buddy",
+            content:
+              "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.",
+            timestamp: new Date(),
+          },
+        ]);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -181,31 +323,51 @@ export default function BuddyPage() {
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
   };
 
-  const showChips = messages.length <= 1 && !isLoading;
+  const showChips = messages.length <= 1 && !isLoading && historyReady;
 
   return (
     <AppShell>
       <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen">
         {/* Chat header */}
         <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-border bg-card/50 backdrop-blur-sm">
-          <div className="max-w-3xl mx-auto flex items-center gap-3">
-            <BuddyAvatar />
-            <div>
-              <h1 className="text-base font-bold text-foreground">ShockPlan Buddy</h1>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
-                AI-powered financial companion
-              </p>
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <BuddyAvatar />
+              <div>
+                <h1 className="text-base font-bold text-foreground">ShockPlan Buddy</h1>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  AI-powered financial companion
+                </p>
+              </div>
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0 gap-1.5"
+              onClick={clearChat}
+              disabled={
+                !historyReady ||
+                isLoading ||
+                !messages.some((m) => m.id !== "welcome")
+              }
+              title="Clear saved chat"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Clear chat</span>
+            </Button>
           </div>
         </div>
 
         {/* Messages area */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-3xl mx-auto space-y-4">
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
-            ))}
+            {!historyReady ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Loading your chat…</p>
+            ) : (
+              messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
+            )}
             {isLoading && <TypingIndicator />}
             <div ref={messagesEndRef} />
           </div>
@@ -243,13 +405,13 @@ export default function BuddyPage() {
                 placeholder="Type your message..."
                 rows={1}
                 className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                disabled={isLoading}
+                disabled={isLoading || !historyReady}
               />
             </div>
             <Button
               size="icon"
               onClick={() => sendMessage(input)}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || !historyReady}
               className="rounded-xl h-11 w-11 shrink-0"
             >
               <Send className="h-4 w-4" />
@@ -261,5 +423,19 @@ export default function BuddyPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+export default function BuddyPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppShell>
+          <div className="p-8 text-center text-muted-foreground">Loading…</div>
+        </AppShell>
+      }
+    >
+      <BuddyChatInner />
+    </Suspense>
   );
 }

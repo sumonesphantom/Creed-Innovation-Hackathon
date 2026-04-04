@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import {
   AlertTriangle, BookOpen, FileText, Umbrella,
-  Lightbulb, ChevronRight,
+  Lightbulb, ChevronRight, HelpCircle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppShell } from "@/components/app-shell";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // ─── Readiness Score Ring ─────────────────────────────────────────────────
 
@@ -18,7 +19,18 @@ const BREAKDOWN = [
   { label: "Insurance", value: 8, max: 25 },
   { label: "Documents", value: 22, max: 25 },
   { label: "Awareness", value: 17, max: 25 },
-];
+] as const;
+
+const SCORE_WHY: Record<(typeof BREAKDOWN)[number]["label"], string> = {
+  Savings:
+    "Points from your answer about covering a $500 surprise: yes is strongest, maybe is partial, no is lowest.",
+  Insurance:
+    "Up to 5 points per insurance type you said you have (auto, renters, health, life, etc.), with a bonus when you have several kinds of coverage.",
+  Documents:
+    "Up to 5 points per document category you have in the vault (insurance, ID, lease, medical, financial).",
+  Awareness:
+    "Points when you use crisis flows, the budget tool, and other awareness-building parts of the app.",
+};
 
 function scoreColor(pct: number) {
   if (pct < 30) return "var(--destructive, #ef4444)";
@@ -73,8 +85,24 @@ function ReadinessRing() {
           const barColor = scoreColor(pct);
           return (
             <div key={label} className="flex flex-col gap-1.5">
-              <div className="flex justify-between text-xs font-medium text-muted-foreground">
-                <span>{label}</span>
+              <div className="flex justify-between text-xs font-medium text-muted-foreground items-center gap-1">
+                <span className="inline-flex items-center gap-1">
+                  {label}
+                  <Popover>
+                    <PopoverTrigger>
+                      <button
+                        type="button"
+                        className="inline-flex rounded-md p-0.5 text-muted-foreground hover:text-foreground"
+                        aria-label={`Why ${label}`}
+                      >
+                        <HelpCircle className="h-3.5 w-3.5" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="text-xs w-72 text-popover-foreground">
+                      {SCORE_WHY[label]}
+                    </PopoverContent>
+                  </Popover>
+                </span>
                 <span className="tabular-nums">{value} / {max}</span>
               </div>
               <div className="h-2 w-full rounded-full bg-border overflow-hidden">

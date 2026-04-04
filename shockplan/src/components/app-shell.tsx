@@ -8,8 +8,8 @@ import {
     MessageCircle,
     AlertTriangle,
     DollarSign,
+    GitBranch,
     Shield,
-    Lock,
     Settings,
     Menu,
     X,
@@ -17,6 +17,7 @@ import {
     LogOut,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { DataBadge } from "./data-badge";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -26,6 +27,7 @@ const navItems = [
     { label: "AI Buddy", href: "/buddy", icon: MessageCircle },
     { label: "Crisis", href: "/crisis", icon: AlertTriangle },
     { label: "Budget", href: "/budget", icon: DollarSign },
+    { label: "Flow", href: "/flow", icon: GitBranch },
     { label: "My Data", href: "/my-data", icon: Settings },
 ] as const;
 
@@ -137,12 +139,10 @@ function SidebarContent({
                 <div className="flex items-center justify-between">
                     <ThemeToggle collapsed={collapsed} />
                 </div>
-                <div
-                    className={`flex items-center gap-1.5 text-xs text-muted-foreground ${collapsed ? "justify-center" : "px-1"}`}
-                >
-                    <Lock className="h-3 w-3 shrink-0" />
-                    {!collapsed && <span>Encrypted</span>}
-                </div>
+                <DataBadge
+                    collapsed={collapsed}
+                    className={collapsed ? "justify-center w-full" : "px-1"}
+                />
             </div>
         </>
     );
@@ -261,7 +261,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             </span>
                         </div>
                     </div>
-                    <ThemeToggle collapsed />
+                    <div className="flex items-center gap-1 shrink-0">
+                        <DataBadge collapsed />
+                        <ThemeToggle collapsed />
+                    </div>
                 </header>
 
                 <main className="flex-1 pb-20 lg:pb-0">{children}</main>

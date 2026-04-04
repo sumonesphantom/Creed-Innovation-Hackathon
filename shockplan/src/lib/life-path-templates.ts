@@ -1,0 +1,167 @@
+import type { LifePathTemplate } from "@/types";
+
+export const LIFE_PATH_TEMPLATES: LifePathTemplate[] = [
+  {
+    id: "job-loss",
+    title: "Recovering from job loss",
+    description: "Compare cutting costs + side income vs burning savings vs investing in a career change.",
+    nodes: [
+      {
+        id: "jl-root",
+        type: "root",
+        label: "Job loss",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 0,
+        monthsToStability: 0,
+      },
+      {
+        id: "jl-dec1",
+        type: "decision",
+        label: "Your main strategy",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 0,
+        monthsToStability: 0,
+      },
+      {
+        id: "jl-cut-gig",
+        type: "outcome",
+        label: "Cut costs + gig / temp work",
+        monthlyIncomeDelta: 900,
+        monthlyExpenseDelta: 200,
+        monthsToStability: 8,
+      },
+      {
+        id: "jl-savings",
+        type: "outcome",
+        label: "Rely on savings while job searching",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 0,
+        monthsToStability: -18,
+      },
+      {
+        id: "jl-retrain",
+        type: "outcome",
+        label: "Retrain or pivot careers",
+        monthlyIncomeDelta: -400,
+        monthlyExpenseDelta: 350,
+        monthsToStability: 16,
+      },
+    ],
+    edges: [
+      { id: "jl-e0", from: "jl-root", to: "jl-dec1", risk: "stable" },
+      { id: "jl-e1", from: "jl-dec1", to: "jl-cut-gig", risk: "stable" },
+      { id: "jl-e2", from: "jl-dec1", to: "jl-savings", risk: "crisis" },
+      { id: "jl-e3", from: "jl-dec1", to: "jl-retrain", risk: "risky" },
+    ],
+  },
+  {
+    id: "emergency-fund",
+    title: "Building first emergency fund",
+    description: "See how different monthly savings rates change your timeline.",
+    nodes: [
+      {
+        id: "ef-root",
+        type: "root",
+        label: "Start building",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 0,
+        monthsToStability: 0,
+      },
+      {
+        id: "ef-dec1",
+        type: "decision",
+        label: "Monthly savings target",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 0,
+        monthsToStability: 0,
+      },
+      {
+        id: "ef-200",
+        type: "outcome",
+        label: "Save $200/mo (aggressive)",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 200,
+        monthsToStability: 10,
+      },
+      {
+        id: "ef-50",
+        type: "outcome",
+        label: "Save $50/mo (steady)",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 50,
+        monthsToStability: 18,
+      },
+      {
+        id: "ef-15",
+        type: "outcome",
+        label: "Save $15/mo (small start)",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 15,
+        monthsToStability: 28,
+      },
+    ],
+    edges: [
+      { id: "ef-e0", from: "ef-root", to: "ef-dec1", risk: "stable" },
+      { id: "ef-e1", from: "ef-dec1", to: "ef-200", risk: "stable" },
+      { id: "ef-e2", from: "ef-dec1", to: "ef-50", risk: "risky" },
+      { id: "ef-e3", from: "ef-dec1", to: "ef-15", risk: "risky" },
+    ],
+  },
+  {
+    id: "debt",
+    title: "Getting out of debt",
+    description: "Snowball vs avalanche vs minimum payments — modeled impact on cash flow.",
+    nodes: [
+      {
+        id: "db-root",
+        type: "root",
+        label: "Debt payoff",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 0,
+        monthsToStability: 0,
+      },
+      {
+        id: "db-dec1",
+        type: "decision",
+        label: "Strategy",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 0,
+        monthsToStability: 0,
+      },
+      {
+        id: "db-snowball",
+        type: "outcome",
+        label: "Snowball (smallest first)",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 320,
+        monthsToStability: 14,
+      },
+      {
+        id: "db-avalanche",
+        type: "outcome",
+        label: "Avalanche (highest APR)",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 340,
+        monthsToStability: 12,
+      },
+      {
+        id: "db-min",
+        type: "outcome",
+        label: "Minimum payments only",
+        monthlyIncomeDelta: 0,
+        monthlyExpenseDelta: 110,
+        monthsToStability: 42,
+      },
+    ],
+    edges: [
+      { id: "db-e0", from: "db-root", to: "db-dec1", risk: "stable" },
+      { id: "db-e1", from: "db-dec1", to: "db-snowball", risk: "stable" },
+      { id: "db-e2", from: "db-dec1", to: "db-avalanche", risk: "stable" },
+      { id: "db-e3", from: "db-dec1", to: "db-min", risk: "crisis" },
+    ],
+  },
+];
+
+export function getTemplateById(id: string): LifePathTemplate | undefined {
+  return LIFE_PATH_TEMPLATES.find((t) => t.id === id);
+}

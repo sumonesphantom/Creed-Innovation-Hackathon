@@ -1,5 +1,26 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { Content } from "@google/generative-ai";
 import { UserProfile, ReadinessScore } from "@/types";
+
+const MAX_BUDDY_CONTEXT_MESSAGES = 48;
+
+export function buddyStoredToGeminiHistory(
+  messages: { role: string; content: string }[]
+): Content[] {
+  const slice = messages.slice(-MAX_BUDDY_CONTEXT_MESSAGES);
+  const out: Content[] = [];
+  for (const m of slice) {
+    if (m.role !== "user" && m.role !== "buddy") continue;
+    const role = m.role === "user" ? "user" : "model";
+    const text = m.content ?? "";
+    if (!text) continue;
+    out.push({ role, parts: [{ text }] });
+  }
+  while (out.length > 0 && out[0].role !== "user") {
+    out.shift();
+  }
+  return out;
+}
 
 const BUDDY_SYSTEM_PROMPT = `You are ShockPlan Buddy — a warm, friendly financial companion who helps people navigate unexpected life events. You are NOT a financial advisor.
 
@@ -57,27 +78,89 @@ function getGenAI() {
   return new GoogleGenerativeAI(apiKey);
 }
 
-export async function chatWithBuddy(
-  message: string,
+function buildBuddySystemPrompt(
   profile: UserProfile,
-  score?: ReadinessScore,
-  crisisContext?: string
-): Promise<string> {
-  const genAI = getGenAI();
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
+  score: ReadinessScore | undefined,
+  crisisContext: string | undefined
+): string {
   let systemPrompt = BUDDY_SYSTEM_PROMPT + "\n\n" + buildUserContext(profile, score);
 
   if (crisisContext) {
     systemPrompt += `\n\nCURRENT CRISIS: The user is dealing with: ${crisisContext}. Tailor your response to help them through this specific situation.`;
   }
 
-  const chat = model.startChat({
-    history: [],
-    systemInstruction: systemPrompt,
-  });
+  return systemPrompt;
+}
 
-  const result = await chat.sendMessage(message);
-  const response = result.response;
-  return response.text();
+export function createBuddyChatReadableStream(
+  message: string,
+  profile: UserProfile,
+  score: ReadinessScore | undefined,
+  crisisContext: string | undefined,
+  history: Content[],
+  onAssistantComplete?: (assistantText: string) => void | Promise<void>
+): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    async start(controller) {
+      let accumulated = "";
+      try {
+        const genAI = getGenAI();
+        const systemPrompt = buildBuddySystemPrompt(profile, score, crisisContext);
+        const model = genAI.getGenerativeModel({
+          model: "gemini-2.5-flash",
+          systemInstruction: systemPrompt,
+        });
+        const chat = model.startChat({
+          history,
+        });
+        const streamResult = await chat.sendMessageStream(message);
+        for await (const chunk of streamResult.stream) {
+          try {
+            const text = chunk.text();
+            if (text) {
+              accumulated += text;
+              controller.enqueue(encoder.encode(text));
+            }
+          } catch {
+            continue;
+          }
+        }
+        if (onAssistantComplete && accumulated.trim()) {
+          await onAssistantComplete(accumulated);
+        }
+        controller.close();
+      } catch (e) {
+        controller.error(e);
+      }
+    },
+  });
+}
+
+export async function chatWithBuddy(
+  message: string,
+  profile: UserProfile,
+  score?: ReadinessScore,
+  crisisContext?: string
+): Promise<string> {
+  const stream = createBuddyChatReadableStream(
+    message,
+    profile,
+    score,
+    crisisContext,
+    []
+  );
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let acc = "";
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      acc += decoder.decode(value, { stream: true });
+    }
+    return acc;
+  } finally {
+    reader.releaseLock();
+  }
 }

@@ -70,6 +70,26 @@ const VaultMetadataSchema = new Schema({
   uploadedAt: { type: Date, default: Date.now },
 });
 
+const BuddyChatMessageSchema = new Schema(
+  {
+    id: { type: String, required: true },
+    role: { type: String, enum: ["user", "buddy"], required: true },
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const BuddyChatSchema = new Schema({
+  deviceId: { type: String, default: "", index: true },
+  userId: { type: String, default: "", index: true },
+  messages: { type: [BuddyChatMessageSchema], default: [] },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
+BuddyChatSchema.index({ userId: 1, deviceId: 1 });
+
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
 export const User =
@@ -82,3 +102,5 @@ export const CommunityPostModel =
   mongoose.models.CommunityPost || mongoose.model("CommunityPost", CommunityPostSchema);
 export const VaultMetadata =
   mongoose.models.VaultMetadata || mongoose.model("VaultMetadata", VaultMetadataSchema);
+export const BuddyChat =
+  mongoose.models.BuddyChat || mongoose.model("BuddyChat", BuddyChatSchema);

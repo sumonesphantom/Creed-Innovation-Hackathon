@@ -99,28 +99,28 @@
 - [x] Responsive design with short labels on mobile, full labels on desktop
 
 ### Phase 7: Emergency Budget Reset (~2 hrs)
-- [ ] Normal + crisis mode budget calculator
-- [ ] Bill priority ranker
-- [ ] Cash flow timeline
-- [ ] "What if" toggles
+- [x] Normal + crisis mode budget calculator
+- [x] Bill priority ranker
+- [x] Cash flow timeline
+- [x] "What if" toggles
 
 ### Phase 7.5: Flow of Life — Visual Path Planner (~3 hrs)
-- [ ] Interactive timeline/flow canvas where users map out their financial life path
-- [ ] Branching decision nodes (e.g., "Keep current job" vs "Switch careers" vs "Go back to school")
-- [ ] Each branch shows projected financial impact (savings, expenses, timeline to stability)
-- [ ] Visual flow lines connecting life events with color-coded outcomes (green = stable, yellow = risky, red = crisis)
-- [ ] "What-if" alternate path exploration — see how different choices play out over 6mo/1yr/5yr
-- [ ] Pre-built templates: "Recovering from job loss", "Building first emergency fund", "Getting out of debt"
-- [ ] Integration with Buddy — ask AI to suggest paths based on your profile
-- [ ] Drag-and-drop or tap-to-add life events (new job, baby, move, medical event, etc.)
-- [ ] Timeline zoom: month view, year view, 5-year view
-- [ ] Share/export path as image for accountability
+- [x] Interactive timeline/flow canvas where users map out their financial life path
+- [x] Branching decision nodes (e.g., "Keep current job" vs "Switch careers" vs "Go back to school")
+- [x] Each branch shows projected financial impact (savings, expenses, timeline to stability)
+- [x] Visual flow lines connecting life events with color-coded outcomes (green = stable, yellow = risky, red = crisis)
+- [x] "What-if" alternate path exploration — see how different choices play out over 6mo/1yr/5yr
+- [x] Pre-built templates: "Recovering from job loss", "Building first emergency fund", "Getting out of debt"
+- [x] Integration with Buddy — ask AI to suggest paths based on your profile
+- [x] Drag-and-drop or tap-to-add life events (new job, baby, move, medical event, etc.)
+- [x] Timeline zoom: month view, year view, 5-year view
+- [x] Share/export path as image for accountability
 
 ### Phase 8: Data Safety + My Data Page (~1.5 hrs)
-- [ ] My Data page: view/export/delete
-- [ ] Data badge on every page
-- [ ] "Why?" popovers on score
-- [ ] "How ShockPlan Works" section
+- [x] My Data page: view/export/delete
+- [x] Data badge on every page
+- [x] "Why?" popovers on score
+- [x] "How ShockPlan Works" section
 
 ### Phase 9: Community Feed Stub (~1 hr)
 - [ ] Anonymous post feed
