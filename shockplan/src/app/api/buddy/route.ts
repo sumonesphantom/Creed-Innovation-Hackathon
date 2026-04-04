@@ -68,7 +68,17 @@ export async function POST(request: NextRequest) {
 
     await connectToDatabase();
 
-    const profile = await Profile.findOne(query);
+    let profile = await Profile.findOne(query);
+
+    // If authenticated but no profile found by userId, try migrating from deviceId
+    if (!profile && userId && deviceId) {
+      profile = await Profile.findOneAndUpdate(
+        { deviceId, userId: { $in: ["", null, undefined] } },
+        { $set: { userId } },
+        { new: true }
+      );
+    }
+
     if (!profile) {
       return NextResponse.json(
         { error: "Profile not found. Complete onboarding first." },
@@ -76,9 +86,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const score = await Score.findOne(query).sort({ calculatedAt: -1 });
+    const resolvedQuery = profile.userId ? { userId: profile.userId } : { deviceId: profile.deviceId };
+    const score = await Score.findOne(resolvedQuery).sort({ calculatedAt: -1 });
 
-    const chatDoc = await BuddyChat.findOne(query).lean();
+    const chatDoc = await BuddyChat.findOne(resolvedQuery).lean();
     const prior = chatDoc?.messages ?? [];
     const history = buddyStoredToGeminiHistory(prior);
 
@@ -92,7 +103,7 @@ export async function POST(request: NextRequest) {
         const userMsgId = randomUUID();
         const buddyMsgId = randomUUID();
         await BuddyChat.findOneAndUpdate(
-          query,
+          resolvedQuery,
           {
             $push: {
               messages: {

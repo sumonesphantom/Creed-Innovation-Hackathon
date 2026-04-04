@@ -85,9 +85,15 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
             )}
             {!collapsed && (
                 <a
-                    href="/auth/logout?returnTo=/"
+                    href="/auth/logout"
                     className="p-1 text-muted-foreground hover:text-foreground transition-colors"
                     title="Sign out"
+                    onClick={() => {
+                        // Clear authenticated user's chat cache on logout
+                        if (user?.sub) {
+                            localStorage.removeItem(`shockplan_buddy_messages_${user.sub}`);
+                        }
+                    }}
                 >
                     <LogOut className="h-3.5 w-3.5" />
                 </a>
