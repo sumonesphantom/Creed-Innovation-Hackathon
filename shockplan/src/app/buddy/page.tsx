@@ -90,7 +90,10 @@ function BuddyChatInner() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [historyReady, setHistoryReady] = useState(false);
 
-  const STORAGE_KEY = "shockplan_buddy_messages";
+  // Namespace by user so authenticated and anonymous sessions never share history
+  const STORAGE_KEY = user?.sub
+    ? `shockplan_buddy_messages_${user.sub}`
+    : `shockplan_buddy_messages_anon_${localStorage.getItem("shockplan_device_id") || "unknown"}`;
 
   const saveToLocalStorage = (msgs: Message[]) => {
     try {
