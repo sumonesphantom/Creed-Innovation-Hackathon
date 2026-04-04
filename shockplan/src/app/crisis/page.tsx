@@ -7,8 +7,6 @@ import {
   ChevronLeft, ChevronRight, MessageCircle, CheckCircle2,
   Clock, CalendarRange, Zap, AlertTriangle,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 
 type TimelineStep = { title: string; description: string };
@@ -26,9 +24,7 @@ type CrisisType = {
   Icon: React.ElementType;
   iconBg: string;
   iconColor: string;
-  border: string;
-  cardBg: string;
-  accent: string;
+  accentText: string;
   barColor: string;
   timeline: Timeline;
 };
@@ -41,9 +37,7 @@ const CRISES: CrisisType[] = [
     Icon: Briefcase,
     iconBg: "bg-amber-100 dark:bg-amber-900/30",
     iconColor: "text-amber-600 dark:text-amber-400",
-    border: "border-amber-200 dark:border-amber-800",
-    cardBg: "bg-linear-to-r from-amber-50/80 to-transparent dark:from-amber-900/10 dark:to-transparent",
-    accent: "text-amber-700 dark:text-amber-300",
+    accentText: "text-amber-700 dark:text-amber-300",
     barColor: "bg-amber-500",
     timeline: {
       tenMin: [
@@ -71,10 +65,8 @@ const CRISES: CrisisType[] = [
     sub: "Unexpected health costs",
     Icon: Heart,
     iconBg: "bg-red-100 dark:bg-red-900/30",
-    iconColor: "text-red-600 dark:text-red-400",
-    border: "border-red-200 dark:border-red-800",
-    cardBg: "bg-linear-to-r from-red-50/80 to-transparent dark:from-red-900/10 dark:to-transparent",
-    accent: "text-red-700 dark:text-red-300",
+    iconColor: "text-red-500 dark:text-red-400",
+    accentText: "text-red-700 dark:text-red-300",
     barColor: "bg-red-500",
     timeline: {
       tenMin: [
@@ -102,9 +94,7 @@ const CRISES: CrisisType[] = [
     Icon: Car,
     iconBg: "bg-blue-100 dark:bg-blue-900/30",
     iconColor: "text-blue-600 dark:text-blue-400",
-    border: "border-blue-200 dark:border-blue-800",
-    cardBg: "bg-linear-to-r from-blue-50/80 to-transparent dark:from-blue-900/10 dark:to-transparent",
-    accent: "text-blue-700 dark:text-blue-300",
+    accentText: "text-blue-700 dark:text-blue-300",
     barColor: "bg-blue-500",
     timeline: {
       tenMin: [
@@ -132,9 +122,7 @@ const CRISES: CrisisType[] = [
     Icon: Home,
     iconBg: "bg-purple-100 dark:bg-purple-900/30",
     iconColor: "text-purple-600 dark:text-purple-400",
-    border: "border-purple-200 dark:border-purple-800",
-    cardBg: "bg-linear-to-r from-purple-50/80 to-transparent dark:from-purple-900/10 dark:to-transparent",
-    accent: "text-purple-700 dark:text-purple-300",
+    accentText: "text-purple-700 dark:text-purple-300",
     barColor: "bg-purple-500",
     timeline: {
       tenMin: [
@@ -161,10 +149,8 @@ const CRISES: CrisisType[] = [
     sub: "Storm, flood, fire, or earthquake",
     Icon: CloudLightning,
     iconBg: "bg-yellow-100 dark:bg-yellow-900/30",
-    iconColor: "text-yellow-600 dark:text-yellow-400",
-    border: "border-yellow-200 dark:border-yellow-800",
-    cardBg: "bg-linear-to-r from-yellow-50/80 to-transparent dark:from-yellow-900/10 dark:to-transparent",
-    accent: "text-yellow-700 dark:text-yellow-300",
+    iconColor: "text-yellow-600 dark:text-yellow-500",
+    accentText: "text-yellow-700 dark:text-yellow-300",
     barColor: "bg-yellow-500",
     timeline: {
       tenMin: [
@@ -188,33 +174,38 @@ const CRISES: CrisisType[] = [
 ];
 
 const TIMELINE_TABS = [
-  { key: "tenMin" as const,      label: "First 10 min",   shortLabel: "10 min", icon: Zap,          description: "Do these right now" },
-  { key: "twentyFourHr" as const, label: "First 24 hours", shortLabel: "24 hrs", icon: Clock,         description: "Handle today" },
-  { key: "sevenDay" as const,    label: "First 7 days",   shortLabel: "7 days", icon: CalendarRange, description: "This week" },
+  { key: "tenMin" as const,       label: "First 10 min",   shortLabel: "10 min", icon: Zap,           description: "Do right now" },
+  { key: "twentyFourHr" as const, label: "First 24 hours", shortLabel: "24 hrs", icon: Clock,          description: "Handle today" },
+  { key: "sevenDay" as const,     label: "First 7 days",   shortLabel: "7 days", icon: CalendarRange,  description: "This week" },
 ];
 
+// ── Crisis selection card ─────────────────────────────────────────────────────
 function CrisisCard({ crisis, onSelect }: { crisis: CrisisType; onSelect: (c: CrisisType) => void }) {
   const { Icon } = crisis;
   return (
-    <button onClick={() => onSelect(crisis)} className="w-full text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
-      <Card className={`border ${crisis.border} rounded-2xl transition-all group-hover:shadow-md group-active:scale-[0.99] overflow-hidden`}>
-        <div className={`${crisis.cardBg}`}>
-          <CardContent className="flex items-center gap-4 p-4">
-            <div className={`flex items-center justify-center w-11 h-11 rounded-xl shrink-0 ${crisis.iconBg}`}>
-              <Icon className={`h-5 w-5 ${crisis.iconColor}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={`font-bold text-sm ${crisis.accent}`}>{crisis.label}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{crisis.sub}</p>
-            </div>
-            <ChevronRight className={`h-4 w-4 shrink-0 ${crisis.iconColor} group-hover:translate-x-0.5 transition-transform`} />
-          </CardContent>
+    <button
+      onClick={() => onSelect(crisis)}
+      className="w-full text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] rounded-[10px]"
+    >
+      <div
+        className="flex items-center gap-3 px-4 py-3.5 rounded-[10px] bg-card border border-border
+                   shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]
+                   transition-all duration-150"
+      >
+        <div className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 ${crisis.iconBg}`}>
+          <Icon className={`h-4 w-4 ${crisis.iconColor}`} />
         </div>
-      </Card>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm text-foreground leading-tight">{crisis.label}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{crisis.sub}</p>
+        </div>
+        <ChevronRight className={`h-4 w-4 shrink-0 text-muted-foreground group-hover:translate-x-0.5 transition-transform`} />
+      </div>
     </button>
   );
 }
 
+// ── Timeline triage view ──────────────────────────────────────────────────────
 function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<"tenMin" | "twentyFourHr" | "sevenDay">("tenMin");
   const [checked, setChecked] = useState<Record<string, boolean[]>>({
@@ -229,6 +220,7 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
   const doneCount = currentChecked.filter(Boolean).length;
   const totalDone = Object.values(checked).flat().filter(Boolean).length;
   const totalSteps = Object.values(crisis.timeline).flat().length;
+  const overallPct = Math.round((totalDone / totalSteps) * 100);
 
   function toggle(i: number) {
     setChecked((prev) => ({
@@ -238,29 +230,34 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
   }
 
   return (
-    <div className="flex flex-col gap-5 w-full">
-      {/* Header */}
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-4 w-full">
+
+      {/* ── Back + identity strip ── */}
+      <div className="flex items-center gap-2.5">
         <button
           onClick={onBack}
-          className="flex items-center justify-center w-9 h-9 rounded-xl bg-card border border-border hover:bg-muted transition-colors"
+          className="flex items-center justify-center w-8 h-8 rounded-lg bg-card border border-border
+                     hover:bg-muted transition-colors shrink-0"
         >
           <ChevronLeft className="h-4 w-4 text-foreground" />
         </button>
-        <div className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 ${crisis.iconBg}`}>
-          <Icon className={`h-5 w-5 ${crisis.iconColor}`} />
+        <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${crisis.iconBg}`}>
+          <Icon className={`h-4 w-4 ${crisis.iconColor}`} />
         </div>
-        <div>
-          <p className={`font-bold text-sm ${crisis.accent}`}>{crisis.label}</p>
-          <p className="text-xs text-muted-foreground">{totalDone} of {totalSteps} total steps done</p>
+        <div className="min-w-0">
+          <p className="font-semibold text-sm text-foreground leading-tight">{crisis.label}</p>
+          <p className="text-[11px] text-muted-foreground">
+            {totalDone} of {totalSteps} steps done
+          </p>
         </div>
       </div>
 
-      {/* Overall progress */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex justify-between text-xs text-muted-foreground">
+      {/* ── Overall progress bar ── */}
+      <div className="bg-card border border-border rounded-[10px] px-4 py-3
+                      shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+        <div className="flex justify-between text-xs text-muted-foreground mb-2">
           <span>Overall progress</span>
-          <span className="font-semibold text-foreground tabular-nums">{Math.round((totalDone / totalSteps) * 100)}%</span>
+          <span className="font-semibold text-foreground tabular-nums">{overallPct}%</span>
         </div>
         <div className="h-2 w-full rounded-full overflow-hidden bg-border">
           <div
@@ -270,7 +267,7 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
         </div>
       </div>
 
-      {/* Timeline Tabs */}
+      {/* ── Timeline tabs ── */}
       <div className="grid grid-cols-3 gap-2">
         {TIMELINE_TABS.map(({ key, label, shortLabel, icon: TabIcon, description }) => {
           const isActive = activeTab === key;
@@ -283,25 +280,35 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
               key={key}
               onClick={() => setActiveTab(key)}
               className={[
-                "flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center transition-all border",
+                "flex flex-col items-center gap-1.5 rounded-[10px] px-2 py-3 text-center transition-all border",
                 isActive
-                  ? `${crisis.border} bg-card shadow-sm`
-                  : "border-transparent bg-muted/50 hover:bg-muted",
+                  ? "bg-[#1A1A1A] dark:bg-white border-[#1A1A1A] dark:border-white"
+                  : "border-border bg-card hover:bg-muted",
               ].join(" ")}
             >
-              <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? crisis.iconBg : "bg-muted"}`}>
+              <div className={`flex items-center justify-center w-7 h-7 rounded-lg
+                               ${isActive ? "bg-white/15 dark:bg-black/10" : "bg-muted"}`}>
                 {tabComplete ? (
-                  <CheckCircle2 className={`h-4 w-4 ${isActive ? crisis.iconColor : "text-emerald-500"}`} />
+                  <CheckCircle2 className={`h-3.5 w-3.5 ${isActive ? "text-[#F5C518]" : "text-emerald-500"}`} />
                 ) : (
-                  <TabIcon className={`h-4 w-4 ${isActive ? crisis.iconColor : "text-muted-foreground"}`} />
+                  <TabIcon className={`h-3.5 w-3.5 ${isActive ? "text-white dark:text-[#1A1A1A]" : "text-muted-foreground"}`} />
                 )}
               </div>
-              <span className={`text-xs font-bold ${isActive ? crisis.accent : "text-muted-foreground"}`}>
+              <span className={`text-xs font-semibold leading-tight
+                                ${isActive ? "text-white dark:text-[#1A1A1A]" : "text-muted-foreground"}`}>
                 <span className="hidden sm:inline">{label}</span>
                 <span className="sm:hidden">{shortLabel}</span>
               </span>
-              <span className="text-[10px] text-muted-foreground hidden sm:block">{description}</span>
-              <span className={`text-[10px] tabular-nums font-semibold ${tabComplete ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+              <span className={`text-[10px] hidden sm:block
+                                ${isActive ? "text-white/60 dark:text-black/50" : "text-muted-foreground"}`}>
+                {description}
+              </span>
+              <span className={`text-[10px] tabular-nums font-semibold
+                                ${tabComplete
+                                  ? "text-emerald-500"
+                                  : isActive
+                                    ? "text-white/70 dark:text-black/60"
+                                    : "text-muted-foreground"}`}>
                 {tabDone}/{tabSteps.length}
               </span>
             </button>
@@ -309,92 +316,114 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
         })}
       </div>
 
-      {/* Active tab context bar */}
-      <div className={`rounded-xl px-4 py-2.5 border ${crisis.border} ${crisis.cardBg}`}>
-        <p className={`text-xs font-semibold ${crisis.accent}`}>
-          {TIMELINE_TABS.find((t) => t.key === activeTab)?.description} — {doneCount} of {steps.length} done
-        </p>
+      {/* ── Active tab label ── */}
+      <div className="flex items-center justify-between px-1">
+        <span className="text-xs font-semibold text-foreground">
+          {TIMELINE_TABS.find((t) => t.key === activeTab)?.label}
+        </span>
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {doneCount} / {steps.length} done
+        </span>
       </div>
 
-      {/* Steps */}
-      <ol className="flex flex-col gap-2.5">
+      {/* ── Steps ── */}
+      <ol className="flex flex-col gap-2">
         {steps.map((step, i) => {
           const done = currentChecked[i];
           return (
             <li key={`${activeTab}-${i}`}>
-              <button onClick={() => toggle(i)} className="w-full text-left group rounded-2xl">
-                <Card className={`${done ? crisis.border : "border-border"} rounded-2xl transition-all ${done ? crisis.cardBg : "bg-card"}`}>
-                  <CardContent className="flex items-start gap-4 p-4">
-                    <div className="shrink-0 mt-0.5">
-                      {done ? (
-                        <CheckCircle2 className={`h-5 w-5 ${crisis.iconColor}`} />
-                      ) : (
-                        <span className={`flex items-center justify-center w-5 h-5 rounded-full border-2 text-[10px] font-bold ${crisis.border} ${crisis.accent}`}>
-                          {i + 1}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-bold leading-snug ${done ? "line-through opacity-40 text-foreground" : crisis.accent}`}>
-                        {step.title}
+              <button
+                onClick={() => toggle(i)}
+                className="w-full text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] rounded-[10px]"
+              >
+                <div
+                  className={[
+                    "flex items-start gap-3 px-4 py-3 rounded-[10px] border transition-all duration-150",
+                    done
+                      ? "bg-[#FEFAE8] dark:bg-yellow-900/10 border-[#F5C518]/30"
+                      : "bg-card border-border shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]",
+                  ].join(" ")}
+                >
+                  {/* Step indicator */}
+                  <div className="shrink-0 mt-0.5">
+                    {done ? (
+                      <CheckCircle2 className="h-5 w-5 text-[#F5C518]" />
+                    ) : (
+                      <span className={`flex items-center justify-center w-5 h-5 rounded-full border-2
+                                        border-border text-[10px] font-bold text-muted-foreground`}>
+                        {i + 1}
+                      </span>
+                    )}
+                  </div>
+                  {/* Step content */}
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold leading-snug
+                                   ${done ? "line-through opacity-40 text-foreground" : "text-foreground"}`}>
+                      {step.title}
+                    </p>
+                    {!done && (
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {step.description}
                       </p>
-                      {!done && (
-                        <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                          {step.description}
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                    )}
+                  </div>
+                </div>
               </button>
             </li>
           );
         })}
       </ol>
 
-      {/* Talk to Buddy CTA */}
+      {/* ── Talk to Buddy CTA ── */}
       <Link href="/buddy" className="block w-full mt-1">
-        <Button className="w-full h-12 text-sm font-bold rounded-2xl gap-2.5 bg-linear-to-br from-primary to-primary/80 shadow-sm">
+        <div className="flex items-center justify-center gap-2 w-full px-5 py-3 rounded-[10px]
+                        bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]
+                        hover:bg-[#333] dark:hover:bg-gray-100
+                        transition-colors font-semibold text-sm">
           <MessageCircle className="h-4 w-4" />
           Talk to my Buddy about {crisis.label.toLowerCase()}
-        </Button>
+        </div>
       </Link>
-      <p className="text-center text-xs text-muted-foreground pb-1">
+      <p className="text-center text-xs text-muted-foreground -mt-1 pb-1">
         Your Buddy can walk you through each step in plain language.
       </p>
+
     </div>
   );
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function CrisisPage() {
   const [selected, setSelected] = useState<CrisisType | null>(null);
 
   return (
     <AppShell>
-      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10 pb-8">
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-6 lg:pt-8 pb-8">
         {!selected ? (
           <>
-            <section className="mb-6">
-              <div className="flex items-center gap-3 mb-1">
-                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-destructive/10 shrink-0">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
+            {/* Header */}
+            <section className="mb-5">
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-destructive/10 shrink-0">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
                 </div>
-                <h1 className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
+                <h1 className="text-3xl lg:text-4xl font-light text-foreground tracking-tight">
                   {"What's happening?"}
                 </h1>
               </div>
-              <p className="text-base text-muted-foreground mt-1 ml-13">
+              <p className="text-sm text-muted-foreground mt-1 ml-12">
                 {"Select your situation and we'll walk you through it, step by step."}
               </p>
             </section>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Crisis cards grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {CRISES.map((crisis) => (
                 <CrisisCard key={crisis.id} crisis={crisis} onSelect={setSelected} />
               ))}
             </div>
 
-            <p className="text-center text-xs text-muted-foreground mt-6">
+            <p className="text-center text-xs text-muted-foreground mt-5">
               Everything here is private. No data leaves your device without your permission.
             </p>
           </>

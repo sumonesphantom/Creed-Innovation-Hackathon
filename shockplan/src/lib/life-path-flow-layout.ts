@@ -19,9 +19,9 @@ const PAD_X = 24;
 const PAD_Y = 24;
 
 const STROKE: Record<PathRiskLevel, string> = {
-  stable: "#22c55e",
-  risky: "#f59e0b",
-  crisis: "#ef4444",
+  stable: "#C8C8C8",
+  risky: "#666666",
+  crisis: "#1A1A1A",
 };
 
 function isOutcomeOnPath(

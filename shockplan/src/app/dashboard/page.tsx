@@ -31,18 +31,21 @@ const SCORE_WHY: Record<"Savings" | "Insurance" | "Documents" | "Awareness", str
     "Points when you use crisis flows, the budget tool, and other awareness-building parts of the app.",
 };
 
-const CATEGORY_COLORS: Record<"Savings" | "Insurance" | "Documents" | "Awareness", { bar: string; icon: string; bg: string }> = {
-  Savings:   { bar: "bg-emerald-500", icon: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
-  Insurance: { bar: "bg-blue-500",    icon: "text-blue-600 dark:text-blue-400",       bg: "bg-blue-100 dark:bg-blue-900/30" },
-  Documents: { bar: "bg-violet-500",  icon: "text-violet-600 dark:text-violet-400",   bg: "bg-violet-100 dark:bg-violet-900/30" },
-  Awareness: { bar: "bg-amber-500",   icon: "text-amber-600 dark:text-amber-400",     bg: "bg-amber-100 dark:bg-amber-900/30" },
+// Monochrome + yellow theme: dark → gray → gray → yellow hierarchy
+const CATEGORY_COLORS: Record<
+  "Savings" | "Insurance" | "Documents" | "Awareness",
+  { bar: string; dot: string }
+> = {
+  Savings:   { bar: "bg-[#1A1A1A] dark:bg-gray-200", dot: "bg-[#1A1A1A] dark:bg-gray-200" },
+  Insurance: { bar: "bg-gray-500 dark:bg-gray-400",  dot: "bg-gray-500 dark:bg-gray-400" },
+  Documents: { bar: "bg-gray-400 dark:bg-gray-500",  dot: "bg-gray-400 dark:bg-gray-500" },
+  Awareness: { bar: "bg-[#F5C518]",                  dot: "bg-[#F5C518]" },
 };
 
 function scoreColor(pct: number) {
-  if (pct < 30) return "var(--destructive, #ef4444)";
+  if (pct < 30) return "#ef4444";
   if (pct < 55) return "#f59e0b";
-  if (pct < 75) return "oklch(0.55 0.20 260)";
-  return "oklch(0.52 0.17 150)";
+  return "#F5C518"; // yellow accent for building & resilient
 }
 
 function scoreLabel(score: number) {
@@ -54,7 +57,7 @@ function scoreLabel(score: number) {
 
 function ReadinessRing({ score, breakdown }: { score: number; breakdown: Breakdown }) {
   const radius = 84;
-  const stroke = 12;
+  const stroke = 10;
   const r = radius - stroke / 2;
   const circumference = 2 * Math.PI * r;
   const offset = circumference - (score / 100) * circumference;
@@ -68,57 +71,69 @@ function ReadinessRing({ score, breakdown }: { score: number; breakdown: Breakdo
   ];
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full">
+    <div className="flex flex-col items-center gap-4 w-full">
       {/* Ring */}
       <div className="relative flex items-center justify-center">
         <svg width={radius * 2} height={radius * 2} viewBox={`0 0 ${radius * 2} ${radius * 2}`}>
-          <circle cx={radius} cy={radius} r={r} fill="none" stroke="currentColor" strokeWidth={stroke} className="text-border" />
           <circle
-            cx={radius} cy={radius} r={r} fill="none"
-            stroke={color} strokeWidth={stroke}
+            cx={radius} cy={radius} r={r}
+            fill="none" stroke="currentColor" strokeWidth={stroke}
+            className="text-border"
+          />
+          <circle
+            cx={radius} cy={radius} r={r}
+            fill="none"
+            stroke={color}
+            strokeWidth={stroke}
             strokeDasharray={`${circumference} ${circumference}`}
             strokeDashoffset={offset}
             strokeLinecap="round"
             transform={`rotate(-90 ${radius} ${radius})`}
-            style={{ transition: "stroke-dashoffset 0.8s ease", filter: `drop-shadow(0 0 6px ${color}50)` }}
+            style={{ transition: "stroke-dashoffset 0.8s ease" }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-extrabold leading-none tabular-nums" style={{ color }}>
+          <span
+            className="text-5xl font-light leading-none tabular-nums"
+            style={{ color }}
+          >
             {score}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-widest mt-1.5 px-2 py-0.5 rounded-full" style={{ color, backgroundColor: `${color}18` }}>
+          <span
+            className="text-[10px] font-bold uppercase tracking-widest mt-2 px-2.5 py-0.5 rounded-full"
+            style={{ color, backgroundColor: `${color}22` }}
+          >
             {scoreLabel(score)}
           </span>
         </div>
       </div>
 
-      {/* Breakdown bars */}
-      <div className="w-full flex flex-col gap-3.5">
+      {/* Breakdown bars — pill-shaped, monochrome + yellow */}
+      <div className="w-full flex flex-col gap-2.5">
         {rows.map(({ label, value, max }) => {
           const pct = Math.round((value / max) * 100);
           const colors = CATEGORY_COLORS[label];
           return (
             <div key={label} className="flex flex-col gap-1.5">
-              <div className="flex justify-between text-xs font-medium text-muted-foreground items-center gap-1">
+              <div className="flex justify-between text-xs font-medium text-muted-foreground items-center">
                 <span className="inline-flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${colors.bar}`} />
+                  <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
                   {label}
                   <Popover>
                     <PopoverTrigger
-                      className="inline-flex rounded-md p-0.5 text-muted-foreground/60 hover:text-foreground"
+                      className="inline-flex rounded-md p-0.5 text-muted-foreground/50 hover:text-foreground"
                       aria-label={`Why ${label}`}
                     >
                       <HelpCircle className="h-3 w-3" />
                     </PopoverTrigger>
-                    <PopoverContent className="text-xs w-72 text-popover-foreground">
+                    <PopoverContent className="text-xs w-72">
                       {SCORE_WHY[label]}
                     </PopoverContent>
                   </Popover>
                 </span>
                 <span className="tabular-nums font-semibold text-foreground">{value} / {max}</span>
               </div>
-              <div className="h-2 w-full rounded-full bg-border overflow-hidden">
+              <div className="h-2.5 w-full rounded-full bg-border overflow-hidden">
                 <div
                   className={`h-full rounded-full ${colors.bar}`}
                   style={{ width: `${pct}%`, transition: "width 0.7s ease" }}
@@ -133,59 +148,60 @@ function ReadinessRing({ score, breakdown }: { score: number; breakdown: Breakdo
   );
 }
 
+// Dark card crisis CTA — #1A1A1A background, yellow accent
 function CrisisCTA() {
   return (
-    <Link href="/crisis" className="block w-full group rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive">
-      <div className="flex items-center gap-4 w-full rounded-2xl px-5 py-4 border border-destructive/30 bg-linear-to-r from-destructive/8 to-destructive/4 group-hover:from-destructive/15 group-hover:to-destructive/8 transition-all">
-        <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-destructive/15 shrink-0">
-          <AlertTriangle className="h-5 w-5 text-destructive" />
+    <Link
+      href="/crisis"
+      className="block w-full group rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
+    >
+      <div className="flex items-center gap-3 w-full rounded-[10px] px-4 py-3 bg-[#1A1A1A] dark:bg-[#111] group-hover:bg-[#242424] transition-all">
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
+          <AlertTriangle className="h-4 w-4 text-[#F5C518]" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-foreground text-sm">{"I'm in a crisis right now"}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Get step-by-step help immediately</p>
+          <p className="font-semibold text-white text-sm">{"I'm in a crisis right now"}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Get step-by-step help immediately</p>
         </div>
-        <ChevronRight className="h-4 w-4 text-destructive shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        <ChevronRight className="h-4 w-4 text-[#F5C518] shrink-0 group-hover:translate-x-0.5 transition-transform" />
       </div>
     </Link>
   );
 }
 
+// Alternating dark / yellow icon backgrounds
 const ACTIONS = [
   {
     icon: Umbrella,
     label: "Review your insurance coverage",
     sub: "You may be under-insured",
     href: "/budget",
-    iconBg: "bg-blue-100 dark:bg-blue-900/30",
-    iconColor: "text-blue-600 dark:text-blue-400",
-    accent: "hover:border-blue-200 dark:hover:border-blue-800",
+    iconBg: "bg-[#1A1A1A] dark:bg-white/10",
+    iconColor: "text-white",
   },
   {
     icon: FileText,
     label: "Upload key documents",
     sub: "ID, lease, insurance cards",
     href: "/vault",
-    iconBg: "bg-violet-100 dark:bg-violet-900/30",
-    iconColor: "text-violet-600 dark:text-violet-400",
-    accent: "hover:border-violet-200 dark:hover:border-violet-800",
+    iconBg: "bg-[#F5C518]",
+    iconColor: "text-[#1A1A1A]",
   },
   {
     icon: BookOpen,
     label: "Complete a financial literacy module",
     sub: "Build your awareness score",
     href: "/buddy",
-    iconBg: "bg-red-100 dark:bg-red-900/30",
-    iconColor: "text-red-600 dark:text-red-400",
-    accent: "hover:border-red-200 dark:hover:border-red-800",
+    iconBg: "bg-[#1A1A1A] dark:bg-white/10",
+    iconColor: "text-white",
   },
   {
     icon: Lightbulb,
     label: "Set up an emergency fund goal",
     sub: "Even $20/month helps",
     href: "/budget",
-    iconBg: "bg-amber-100 dark:bg-amber-900/30",
-    iconColor: "text-amber-600 dark:text-amber-400",
-    accent: "hover:border-amber-200 dark:hover:border-amber-800",
+    iconBg: "bg-[#F5C518]",
+    iconColor: "text-[#1A1A1A]",
   },
 ] as const;
 
@@ -193,24 +209,26 @@ function ActionItems() {
   return (
     <section className="w-full flex flex-col gap-3">
       <div className="flex items-center gap-2 mb-1">
-        <TrendingUp className="h-4 w-4 text-primary" />
+        <TrendingUp className="h-4 w-4 text-[#B8940E]" />
         <h2 className="text-sm font-bold text-foreground tracking-tight">Improve your score</h2>
       </div>
-      <div className="grid grid-cols-1 gap-2.5">
-        {ACTIONS.map(({ icon: Icon, label, sub, href, iconBg, iconColor, accent }) => (
-          <Link key={label} href={href} className="block group rounded-2xl">
-            <Card className={`border border-border shadow-sm group-hover:shadow-md transition-all bg-card rounded-2xl ${accent}`}>
-              <CardContent className="flex items-center gap-4 p-4">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-xl shrink-0 ${iconBg}`}>
-                  <Icon className={`h-5 w-5 ${iconColor}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground leading-tight">{label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
-              </CardContent>
-            </Card>
+      <div className="grid grid-cols-1 gap-2">
+        {ACTIONS.map(({ icon: Icon, label, sub, href, iconBg, iconColor }) => (
+          <Link key={label} href={href} className="block group">
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-[10px] bg-card border border-border
+                         shadow-[0_1px_4px_rgba(0,0,0,0.05)] group-hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]
+                         transition-all duration-200"
+            >
+              <div className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 ${iconBg}`}>
+                <Icon className={`h-4 w-4 ${iconColor}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground leading-tight">{label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            </div>
           </Link>
         ))}
       </div>
@@ -231,7 +249,7 @@ function ScoreCardSkeleton() {
               <div className="h-3 bg-muted rounded w-1/4" />
               <div className="h-3 bg-muted rounded w-1/6" />
             </div>
-            <div className="h-2 bg-muted rounded-full w-full" />
+            <div className="h-2.5 bg-muted rounded-full w-full" />
           </div>
         ))}
       </div>
@@ -245,19 +263,13 @@ export default function DashboardPage() {
   const [status, setStatus] = useState<"loading" | "error" | "no-profile" | "ready">("loading");
   const [score, setScore] = useState(0);
   const [breakdown, setBreakdown] = useState<Breakdown>({
-    savings: 0,
-    insurance: 0,
-    documents: 0,
-    awareness: 0,
+    savings: 0, insurance: 0, documents: 0, awareness: 0,
   });
 
   const loadScore = useCallback(async () => {
     if (typeof window === "undefined") return;
     const deviceId = localStorage.getItem("shockplan_device_id") || "";
-    if (!deviceId) {
-      setStatus("no-profile");
-      return;
-    }
+    if (!deviceId) { setStatus("no-profile"); return; }
     setStatus("loading");
     const hasUsedBudget = localStorage.getItem("shockplan_used_budget") === "1";
     try {
@@ -265,8 +277,7 @@ export default function DashboardPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          deviceId,
-          hasUsedBudget,
+          deviceId, hasUsedBudget,
           hasCompletedCrisisFlow: false,
           hasVisitedBenefits: false,
         }),
@@ -294,71 +305,104 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
-        {/* Header */}
-        <section className="mb-8">
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
-            {firstName ? `Hey, ${firstName}` : "Hey there"} 👋
-          </h1>
-          <p className="text-base text-muted-foreground mt-1">
-            {"Here's your financial resilience at a glance."}
-          </p>
-        </section>
+      {/* Page wrapper with subtle yellow radial tint (top-right, like reference) */}
+      <div className="relative w-full min-h-screen">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
+          <div
+            className="absolute top-0 right-0 w-2/3 h-2/3 opacity-50 dark:opacity-10"
+            style={{ background: "radial-gradient(ellipse at top right, #FEFAE8 0%, transparent 65%)" }}
+          />
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
-          {/* Score + Crisis CTA */}
-          <div className="lg:col-span-2 space-y-4">
-            <Card className="w-full border border-border shadow-sm bg-card rounded-2xl overflow-hidden">
-              {/* Subtle gradient header strip */}
-              <div className="h-1.5 w-full bg-linear-to-r from-primary via-primary/60 to-primary/20" />
-              <CardContent className="px-6 py-6">
-                <div className="flex items-center justify-between mb-5">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
-                    Shock Readiness
-                  </p>
-                  <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                    / 100
-                  </span>
-                </div>
-                {status === "loading" && <ScoreCardSkeleton />}
-                {status === "error" && (
-                  <div className="flex flex-col items-center gap-4 py-8 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Could not load your score. Check your connection and try again.
+        <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-6 pt-6 lg:pt-8">
+
+          {/* ── Header ── */}
+          <section className="mb-5">
+            <h1 className="text-4xl lg:text-5xl font-light tracking-tight text-foreground">
+              {firstName ? `Welcome, ${firstName}` : "Welcome back"}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              {"Here's your financial resilience at a glance."}
+            </p>
+          </section>
+
+          {/* ── Main grid ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 lg:gap-4">
+
+            {/* Left column: score card + crisis CTA */}
+            <div className="lg:col-span-2 space-y-3">
+
+              {/* Score card */}
+              <div
+                className="w-full rounded-[10px] bg-card border border-border overflow-hidden
+                           shadow-[0_2px_16px_rgba(0,0,0,0.06)]"
+              >
+                {/* Yellow accent strip at top */}
+                <div className="h-1.5 w-full bg-[#F5C518]" />
+                <div className="px-4 py-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                      Shock Readiness
                     </p>
-                    <Button type="button" variant="secondary" className="rounded-xl" onClick={() => void loadScore()}>
-                      Retry
-                    </Button>
+                    <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      / 100
+                    </span>
                   </div>
-                )}
-                {status === "no-profile" && (
-                  <div className="flex flex-col items-center gap-4 py-8 text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                      <TrendingUp className="h-7 w-7 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">No score yet</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Complete onboarding to see your personalized readiness score.
+
+                  {status === "loading" && <ScoreCardSkeleton />}
+
+                  {status === "error" && (
+                    <div className="flex flex-col items-center gap-4 py-8 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        Could not load your score. Check your connection and try again.
                       </p>
+                      <Button
+                        type="button" variant="secondary"
+                        className="rounded-full px-5"
+                        onClick={() => void loadScore()}
+                      >
+                        Retry
+                      </Button>
                     </div>
-                    <Link href="/onboarding" className={cn(buttonVariants(), "rounded-xl")}>
-                      Start onboarding
-                    </Link>
-                  </div>
-                )}
-                {status === "ready" && (
-                  <ReadinessRing score={score} breakdown={breakdown} />
-                )}
-              </CardContent>
-            </Card>
+                  )}
 
-            <CrisisCTA />
-          </div>
+                  {status === "no-profile" && (
+                    <div className="flex flex-col items-center gap-4 py-8 text-center">
+                      <div className="w-14 h-14 rounded-[10px] bg-[#F5C518]/15 flex items-center justify-center">
+                        <TrendingUp className="h-7 w-7 text-[#B8940E]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">No score yet</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Complete onboarding to see your personalized readiness score.
+                        </p>
+                      </div>
+                      <Link
+                        href="/onboarding"
+                        className="inline-flex items-center justify-center rounded-full px-6 py-2 text-sm font-semibold
+                                   bg-[#1A1A1A] text-white hover:bg-[#333] dark:bg-white dark:text-[#1A1A1A]
+                                   transition-colors"
+                      >
+                        Start onboarding
+                      </Link>
+                    </div>
+                  )}
 
-          {/* Action items */}
-          <div className="lg:col-span-3">
-            <ActionItems />
+                  {status === "ready" && (
+                    <ReadinessRing score={score} breakdown={breakdown} />
+                  )}
+                </div>
+              </div>
+
+              {/* Crisis CTA */}
+              <CrisisCTA />
+            </div>
+
+            {/* Right column: action items */}
+            <div className="lg:col-span-3">
+              <ActionItems />
+            </div>
+
           </div>
         </div>
       </div>

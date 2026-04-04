@@ -51,7 +51,7 @@ const LifePathReactFlow = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[min(70vh,640px)] min-h-[420px] flex items-center justify-center rounded-2xl border border-border bg-muted/30 text-muted-foreground text-sm">
+      <div className="h-[min(70vh,640px)] min-h-[420px] flex items-center justify-center rounded-[10px] border border-border bg-card shadow-[0_1px_4px_rgba(0,0,0,0.05)] text-muted-foreground text-sm">
         Loading graph...
       </div>
     ),
@@ -230,7 +230,7 @@ function SectionTitle({ title, description, action }: { title: string; descripti
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 className="text-lg font-bold text-foreground">{title}</h2>
+        <h2 className="text-xl font-medium text-foreground tracking-tight">{title}</h2>
         {description ? <p className="text-sm text-muted-foreground mt-1">{description}</p> : null}
       </div>
       {action}
@@ -543,7 +543,7 @@ export function FlowOfLifePlanner() {
 
   if (status === "error" || !activeScenario) {
     return (
-      <Card className="border border-border rounded-2xl">
+      <Card className="border border-border rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
         <CardContent className="p-6 text-sm text-muted-foreground">
           {loadError ?? "We could not load Flow of Life."}
         </CardContent>
@@ -558,8 +558,8 @@ export function FlowOfLifePlanner() {
   }));
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-6xl mx-auto">
-      <Card className="border border-border rounded-2xl">
+    <div className="flex flex-col gap-4 w-full max-w-6xl mx-auto">
+      <Card className="border border-border rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
         <CardContent className="p-5 flex flex-col gap-4">
           <SectionTitle
             title="Saved scenarios"
@@ -570,7 +570,7 @@ export function FlowOfLifePlanner() {
             <select
               value={activeScenario.id}
               onChange={(event) => setActiveScenarioId(event.target.value)}
-              className="h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground"
+              className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
             >
               {scenarios.map((scenario) => (
                 <option key={scenario.id} value={scenario.id}>
@@ -579,25 +579,25 @@ export function FlowOfLifePlanner() {
               ))}
             </select>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={() => {
+              <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={() => {
                 setScenarioDialogMode("create");
                 setScenarioNameInput(`Scenario ${scenarios.length + 1}`);
               }}>
                 <Plus className="h-4 w-4" />
                 New
               </Button>
-              <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={() => void handleDuplicateScenario()}>
+              <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={() => void handleDuplicateScenario()}>
                 <Copy className="h-4 w-4" />
                 Duplicate
               </Button>
-              <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={() => {
+              <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={() => {
                 setScenarioDialogMode("rename");
                 setScenarioNameInput(activeScenario.name);
               }}>
                 <Pencil className="h-4 w-4" />
                 Rename
               </Button>
-              <Button type="button" variant="outline" size="sm" className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => setDeleteScenarioOpen(true)}>
+              <Button type="button" variant="outline" size="sm" className="rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => setDeleteScenarioOpen(true)}>
                 <Trash2 className="h-4 w-4" />
                 Delete
               </Button>
@@ -610,7 +610,7 @@ export function FlowOfLifePlanner() {
                 type="button"
                 variant={item.id === activeScenario.templateId ? "default" : "outline"}
                 size="sm"
-                className="rounded-xl"
+                className="rounded-lg"
                 onClick={() =>
                   updateActiveScenario((scenario) => ({
                     ...scenario,
@@ -634,7 +634,7 @@ export function FlowOfLifePlanner() {
             type="button"
             variant={zoom === value ? "secondary" : "outline"}
             size="sm"
-            className="rounded-xl"
+            className="rounded-lg"
             onClick={() => updateActiveScenario((scenario) => ({ ...scenario, zoom: value }))}
           >
             {value === "month" ? "6 months" : value === "year" ? "1 year" : "5 years"}
@@ -643,7 +643,7 @@ export function FlowOfLifePlanner() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={() => openEventDraft()}>
+        <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={() => openEventDraft()}>
           <Plus className="h-4 w-4" />
           Add event
         </Button>
@@ -653,19 +653,19 @@ export function FlowOfLifePlanner() {
             type="button"
             variant="outline"
             size="sm"
-            className="rounded-xl"
+            className="rounded-lg"
             onClick={() => openEventDraft(preset)}
           >
             {preset.label}
           </Button>
         ))}
-        <Button type="button" variant="outline" size="sm" className="rounded-xl" disabled={exporting} onClick={() => void exportImage()}>
+        <Button type="button" variant="outline" size="sm" className="rounded-lg" disabled={exporting} onClick={() => void exportImage()}>
           <Download className="h-4 w-4" />
           {exporting ? "Exporting..." : "Export PNG"}
         </Button>
         <Link
           href={`/buddy?context=${encodeURIComponent(buddyContext)}`}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl gap-2 inline-flex")}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg gap-2 inline-flex")}
         >
           <MessageCircle className="h-4 w-4" />
           Ask Buddy
@@ -674,7 +674,7 @@ export function FlowOfLifePlanner() {
 
       <div
         ref={flowRef}
-        className="rounded-2xl border border-border bg-muted/20 overflow-hidden h-[min(70vh,640px)] min-h-[420px]"
+        className="rounded-[10px] border border-border bg-card shadow-[0_1px_4px_rgba(0,0,0,0.05)] overflow-hidden h-[min(70vh,640px)] min-h-[420px]"
       >
         <LifePathReactFlow
           template={template}
@@ -694,8 +694,8 @@ export function FlowOfLifePlanner() {
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
-        <Card className="border border-border rounded-2xl">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
+        <Card className="border border-border rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
           <CardContent className="p-5 flex flex-col gap-4">
             <SectionTitle
               title="Projection"
@@ -704,34 +704,34 @@ export function FlowOfLifePlanner() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Income delta / mo</p>
-                <p className="font-bold text-foreground tabular-nums">{formatMoney(projection.summary.currentMonthlyIncomeDelta)}</p>
+                <p className="font-light text-foreground tabular-nums">{formatMoney(projection.summary.currentMonthlyIncomeDelta)}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Expense delta / mo</p>
-                <p className="font-bold text-foreground tabular-nums">{formatMoney(projection.summary.currentMonthlyExpenseDelta)}</p>
+                <p className="font-light text-foreground tabular-nums">{formatMoney(projection.summary.currentMonthlyExpenseDelta)}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Current net / mo</p>
-                <p className="font-bold text-foreground tabular-nums">{formatMoney(projection.summary.currentNetMonthly)}</p>
+                <p className="font-light text-foreground tabular-nums">{formatMoney(projection.summary.currentNetMonthly)}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Average net / mo</p>
-                <p className="font-bold text-foreground tabular-nums">{formatMoney(projection.summary.averageNetMonthly)}</p>
+                <p className="font-light text-foreground tabular-nums">{formatMoney(projection.summary.averageNetMonthly)}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Projected swing</p>
-                <p className="font-bold text-foreground tabular-nums">{formatMoney(projection.summary.projectedSwing)}</p>
+                <p className="font-light text-foreground tabular-nums">{formatMoney(projection.summary.projectedSwing)}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Stability signal</p>
-                <p className="font-bold text-foreground tabular-nums">
+                <p className="font-light text-foreground tabular-nums">
                   {projection.summary.stabilityMonths <= 0 ? "Stretched" : `~${projection.summary.stabilityMonths} mo`}
                 </p>
               </div>
             </div>
-            <div className="rounded-2xl border border-border bg-background">
+            <div className="rounded-[10px] border border-border bg-background">
               <div className="border-b border-border px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">Monthly timeline</p>
+                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/70">Monthly timeline</p>
               </div>
               <ul className="max-h-80 overflow-y-auto divide-y divide-border">
                 {projection.months.map((month) => (
@@ -759,7 +759,7 @@ export function FlowOfLifePlanner() {
           </CardContent>
         </Card>
 
-        <Card className="border border-border rounded-2xl">
+        <Card className="border border-border rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
           <CardContent className="p-5 flex flex-col gap-4">
             <SectionTitle
               title="Scenario details"
@@ -783,7 +783,7 @@ export function FlowOfLifePlanner() {
                 value={activeScenario.notes}
                 onChange={(event) => updateActiveScenario((scenario) => ({ ...scenario, notes: event.target.value }))}
                 placeholder="Write context you want to preserve for this scenario..."
-                className="rounded-xl"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-2">
@@ -798,7 +798,7 @@ export function FlowOfLifePlanner() {
                     <button
                       key={event.id}
                       type="button"
-                      className="text-left rounded-2xl border border-border bg-background px-4 py-3 hover:bg-muted/50 transition-colors"
+                      className="text-left rounded-[10px] border border-border bg-background px-4 py-3 hover:bg-muted/50 transition-colors"
                       onClick={() => openEventDraft(event)}
                     >
                       <p className="font-semibold text-foreground">{event.label}</p>
@@ -817,7 +817,7 @@ export function FlowOfLifePlanner() {
         </Card>
       </div>
 
-      <Card className="border border-border rounded-2xl">
+      <Card className="border border-border rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
         <CardContent className="p-5 flex flex-col gap-4">
           <SectionTitle
             title="Detailed plan"
@@ -825,11 +825,11 @@ export function FlowOfLifePlanner() {
           />
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {milestoneGroups.map(({ phase, generated, manual }) => (
-              <Card key={phase} className="border border-border rounded-2xl bg-background">
+              <Card key={phase} className="border border-border rounded-[10px] bg-background">
                 <CardContent className="p-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-semibold text-foreground">{PHASE_LABEL[phase]}</p>
-                    <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={() => openMilestoneDraft(undefined, phase)}>
+                    <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={() => openMilestoneDraft(undefined, phase)}>
                       <Plus className="h-4 w-4" />
                       Add step
                     </Button>
@@ -838,7 +838,7 @@ export function FlowOfLifePlanner() {
                     <p className="text-sm text-muted-foreground">No milestones in this phase yet.</p>
                   ) : null}
                   {generated.map((milestone) => (
-                    <label key={milestone.sourceKey} className="flex items-start gap-3 rounded-2xl border border-border px-3 py-3">
+                    <label key={milestone.sourceKey} className="flex items-start gap-3 rounded-[10px] border border-border px-3 py-3">
                       <input
                         type="checkbox"
                         checked={Boolean(activeScenario.generatedMilestoneCompletion[milestone.sourceKey])}
@@ -861,7 +861,7 @@ export function FlowOfLifePlanner() {
                     </label>
                   ))}
                   {manual.map((milestone) => (
-                    <div key={milestone.id} className="rounded-2xl border border-border px-3 py-3">
+                    <div key={milestone.id} className="rounded-[10px] border border-border px-3 py-3">
                       <div className="flex items-start gap-3">
                         <input
                           type="checkbox"
@@ -924,7 +924,7 @@ export function FlowOfLifePlanner() {
           <div className="px-4 pb-4 grid grid-cols-1 gap-4 overflow-y-auto">
             <div className="space-y-2">
               <Label htmlFor="event-label">Label</Label>
-              <Input id="event-label" value={eventDraft.label} onChange={(event) => setEventDraft((current) => ({ ...current, label: event.target.value }))} className="rounded-xl" />
+              <Input id="event-label" value={eventDraft.label} onChange={(event) => setEventDraft((current) => ({ ...current, label: event.target.value }))} className="rounded-lg" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -933,7 +933,7 @@ export function FlowOfLifePlanner() {
                   id="event-category"
                   value={eventDraft.category}
                   onChange={(event) => setEventDraft((current) => ({ ...current, category: event.target.value as LifePathEventCategory }))}
-                  className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
+                  className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
                 >
                   {CATEGORY_OPTIONS.map((category) => (
                     <option key={category} value={category}>
@@ -948,7 +948,7 @@ export function FlowOfLifePlanner() {
                   id="event-risk"
                   value={eventDraft.risk}
                   onChange={(event) => setEventDraft((current) => ({ ...current, risk: event.target.value as LifePathCustomEvent["risk"] }))}
-                  className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
+                  className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
                 >
                   {(["stable", "risky", "crisis"] as const).map((risk) => (
                     <option key={risk} value={risk}>
@@ -961,42 +961,42 @@ export function FlowOfLifePlanner() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="event-start">Start month</Label>
-                <Input id="event-start" type="number" min={1} value={String(eventDraft.startMonthOffset + 1)} onChange={(event) => setEventDraft((current) => ({ ...current, startMonthOffset: Math.max(0, Number(event.target.value || 1) - 1) }))} className="rounded-xl" />
+                <Input id="event-start" type="number" min={1} value={String(eventDraft.startMonthOffset + 1)} onChange={(event) => setEventDraft((current) => ({ ...current, startMonthOffset: Math.max(0, Number(event.target.value || 1) - 1) }))} className="rounded-lg" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="event-duration">Duration (months)</Label>
-                <Input id="event-duration" type="number" min={1} value={String(eventDraft.durationMonths)} onChange={(event) => setEventDraft((current) => ({ ...current, durationMonths: Math.max(1, Number(event.target.value || 1)) }))} className="rounded-xl" />
+                <Input id="event-duration" type="number" min={1} value={String(eventDraft.durationMonths)} onChange={(event) => setEventDraft((current) => ({ ...current, durationMonths: Math.max(1, Number(event.target.value || 1)) }))} className="rounded-lg" />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="event-income">Income delta / mo</Label>
-                <Input id="event-income" type="number" value={String(eventDraft.monthlyIncomeDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, monthlyIncomeDelta: Number(event.target.value || 0) }))} className="rounded-xl" />
+                <Input id="event-income" type="number" value={String(eventDraft.monthlyIncomeDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, monthlyIncomeDelta: Number(event.target.value || 0) }))} className="rounded-lg" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="event-expense">Expense delta / mo</Label>
-                <Input id="event-expense" type="number" value={String(eventDraft.monthlyExpenseDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, monthlyExpenseDelta: Number(event.target.value || 0) }))} className="rounded-xl" />
+                <Input id="event-expense" type="number" value={String(eventDraft.monthlyExpenseDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, monthlyExpenseDelta: Number(event.target.value || 0) }))} className="rounded-lg" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="event-one-time">One-time cash delta</Label>
-                <Input id="event-one-time" type="number" value={String(eventDraft.oneTimeCashDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, oneTimeCashDelta: Number(event.target.value || 0) }))} className="rounded-xl" />
+                <Input id="event-one-time" type="number" value={String(eventDraft.oneTimeCashDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, oneTimeCashDelta: Number(event.target.value || 0) }))} className="rounded-lg" />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="event-notes">Notes</Label>
-              <Textarea id="event-notes" value={eventDraft.notes} onChange={(event) => setEventDraft((current) => ({ ...current, notes: event.target.value }))} className="rounded-xl" />
+              <Textarea id="event-notes" value={eventDraft.notes} onChange={(event) => setEventDraft((current) => ({ ...current, notes: event.target.value }))} className="rounded-lg" />
             </div>
           </div>
           <SheetFooter className="border-t border-border">
             {editingEventId ? (
-              <Button type="button" variant="outline" className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10" onClick={deleteEvent}>
+              <Button type="button" variant="outline" className="rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10" onClick={deleteEvent}>
                 Delete event
               </Button>
             ) : null}
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setEventSheetOpen(false)}>
+            <Button type="button" variant="outline" className="rounded-lg" onClick={() => setEventSheetOpen(false)}>
               Cancel
             </Button>
-            <Button type="button" className="rounded-xl" onClick={saveEventDraft}>
+            <Button type="button" className="rounded-lg" onClick={saveEventDraft}>
               Save event
             </Button>
           </SheetFooter>
@@ -1015,15 +1015,15 @@ export function FlowOfLifePlanner() {
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="scenario-name">Scenario name</Label>
-            <Input id="scenario-name" value={scenarioNameInput} onChange={(event) => setScenarioNameInput(event.target.value)} className="rounded-xl" />
+            <Input id="scenario-name" value={scenarioNameInput} onChange={(event) => setScenarioNameInput(event.target.value)} className="rounded-lg" />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setScenarioDialogMode(null)}>
+            <Button type="button" variant="outline" className="rounded-lg" onClick={() => setScenarioDialogMode(null)}>
               Cancel
             </Button>
             <Button
               type="button"
-              className="rounded-xl"
+              className="rounded-lg"
               onClick={() => {
                 if (scenarioDialogMode === "rename") {
                   updateActiveScenario((scenario) => ({ ...scenario, name: scenarioNameInput || scenario.name }));
@@ -1048,10 +1048,10 @@ export function FlowOfLifePlanner() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setDeleteScenarioOpen(false)}>
+            <Button type="button" variant="outline" className="rounded-lg" onClick={() => setDeleteScenarioOpen(false)}>
               Cancel
             </Button>
-            <Button type="button" variant="destructive" className="rounded-xl" onClick={() => void handleDeleteScenario()}>
+            <Button type="button" variant="destructive" className="rounded-lg" onClick={() => void handleDeleteScenario()}>
               Delete scenario
             </Button>
           </DialogFooter>
@@ -1067,7 +1067,7 @@ export function FlowOfLifePlanner() {
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="milestone-title">Title</Label>
-              <Input id="milestone-title" value={milestoneDraft.title} onChange={(event) => setMilestoneDraft((current) => ({ ...current, title: event.target.value }))} className="rounded-xl" />
+              <Input id="milestone-title" value={milestoneDraft.title} onChange={(event) => setMilestoneDraft((current) => ({ ...current, title: event.target.value }))} className="rounded-lg" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="milestone-phase">Phase</Label>
@@ -1075,7 +1075,7 @@ export function FlowOfLifePlanner() {
                 id="milestone-phase"
                 value={milestoneDraft.phase}
                 onChange={(event) => setMilestoneDraft((current) => ({ ...current, phase: event.target.value as LifePathMilestonePhase }))}
-                className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
+                className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
               >
                 {EVENT_PHASES.map((phase) => (
                   <option key={phase} value={phase}>
@@ -1086,14 +1086,14 @@ export function FlowOfLifePlanner() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="milestone-detail">Detail</Label>
-              <Textarea id="milestone-detail" value={milestoneDraft.detail} onChange={(event) => setMilestoneDraft((current) => ({ ...current, detail: event.target.value }))} className="rounded-xl" />
+              <Textarea id="milestone-detail" value={milestoneDraft.detail} onChange={(event) => setMilestoneDraft((current) => ({ ...current, detail: event.target.value }))} className="rounded-lg" />
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setMilestoneDialogOpen(false)}>
+            <Button type="button" variant="outline" className="rounded-lg" onClick={() => setMilestoneDialogOpen(false)}>
               Cancel
             </Button>
-            <Button type="button" className="rounded-xl" onClick={saveManualMilestone}>
+            <Button type="button" className="rounded-lg" onClick={saveManualMilestone}>
               Save step
             </Button>
           </DialogFooter>

@@ -23,25 +23,28 @@ const QUICK_CHIPS = [
   "What government aid am I eligible for?",
 ];
 
+// Dark bg + yellow shield icon — matches app-shell logo style
 function BuddyAvatar({ size = "md" }: { size?: "sm" | "md" }) {
   const dim = size === "sm" ? "w-7 h-7" : "w-9 h-9";
-  const icon = size === "sm" ? "h-3.5 w-3.5" : "h-4.5 w-4.5";
+  const icon = size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
   return (
-    <div className={`${dim} rounded-full bg-linear-to-br from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center shrink-0`}>
-      <Shield className={`${icon} text-primary`} />
+    <div
+      className={`${dim} rounded-lg bg-[#1A1A1A] dark:bg-white/10 flex items-center justify-center shrink-0`}
+    >
+      <Shield className={`${icon} text-[#F5C518]`} />
     </div>
   );
 }
 
 function TypingIndicator() {
   return (
-    <div className="flex items-end gap-2.5">
+    <div className="flex items-end gap-2">
       <BuddyAvatar size="sm" />
-      <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
-        <div className="flex gap-1.5 items-center h-5">
-          <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:0ms]" />
-          <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:150ms]" />
-          <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:300ms]" />
+      <div className="bg-card border border-border rounded-[10px] rounded-bl-sm px-4 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+        <div className="flex gap-1.5 items-center h-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:0ms]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:150ms]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:300ms]" />
         </div>
       </div>
     </div>
@@ -52,15 +55,18 @@ function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
 
   return (
-    <div className={`flex items-end gap-2.5 ${isUser ? "flex-row-reverse" : ""}`}>
+    <div className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
       {!isUser && <BuddyAvatar size="sm" />}
-      <div className="flex flex-col gap-1" style={{ alignItems: isUser ? "flex-end" : "flex-start", maxWidth: "80%" }}>
+      <div
+        className="flex flex-col gap-1"
+        style={{ alignItems: isUser ? "flex-end" : "flex-start", maxWidth: "78%" }}
+      >
         <div
           className={[
-            "rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
+            "px-4 py-3 text-sm leading-relaxed shadow-[0_1px_4px_rgba(0,0,0,0.05)]",
             isUser
-              ? "bg-linear-to-br from-primary to-primary/85 text-primary-foreground rounded-br-sm"
-              : "bg-card border border-border text-foreground rounded-bl-sm",
+              ? "bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] rounded-[10px] rounded-br-sm"
+              : "bg-card border border-border text-foreground rounded-[10px] rounded-bl-sm",
           ].join(" ")}
         >
           {message.content.split("\n").map((line, i) => (
@@ -69,7 +75,7 @@ function MessageBubble({ message }: { message: Message }) {
             </p>
           ))}
         </div>
-        <span className="text-[10px] text-muted-foreground/60 px-1">
+        <span className="text-[10px] text-muted-foreground/50 px-1">
           {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>
       </div>
@@ -112,11 +118,13 @@ function BuddyChatInner() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
-      return JSON.parse(raw).map((m: { id: string; role: string; content: string; timestamp: string }) => ({
-        ...m,
-        role: m.role as "user" | "buddy",
-        timestamp: new Date(m.timestamp),
-      }));
+      return JSON.parse(raw).map(
+        (m: { id: string; role: string; content: string; timestamp: string }) => ({
+          ...m,
+          role: m.role as "user" | "buddy",
+          timestamp: new Date(m.timestamp),
+        })
+      );
     } catch {
       return [];
     }
@@ -125,14 +133,19 @@ function BuddyChatInner() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const deviceId = typeof window !== "undefined" ? localStorage.getItem("shockplan_device_id") || "" : "";
+      const deviceId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("shockplan_device_id") || ""
+          : "";
       const cached = loadFromLocalStorage();
       if (!cancelled && cached.length > 0) {
         setMessages(cached);
         setHistoryReady(true);
       }
       try {
-        const res = await fetch(`/api/buddy?deviceId=${encodeURIComponent(deviceId)}`);
+        const res = await fetch(
+          `/api/buddy?deviceId=${encodeURIComponent(deviceId)}`
+        );
         const data = await res.json();
         const raw = data.messages ?? [];
         const list: Message[] = raw.map(
@@ -148,19 +161,35 @@ function BuddyChatInner() {
             setMessages(list);
             saveToLocalStorage(list);
           } else if (cached.length === 0) {
-            setMessages([{ id: "welcome", role: "buddy", content: getWelcomeMessage(undefined), timestamp: new Date() }]);
+            setMessages([
+              {
+                id: "welcome",
+                role: "buddy",
+                content: getWelcomeMessage(undefined),
+                timestamp: new Date(),
+              },
+            ]);
           }
         }
       } catch {
         if (!cancelled && cached.length === 0) {
-          setMessages([{ id: "welcome", role: "buddy", content: getWelcomeMessage(undefined), timestamp: new Date() }]);
+          setMessages([
+            {
+              id: "welcome",
+              role: "buddy",
+              content: getWelcomeMessage(undefined),
+              timestamp: new Date(),
+            },
+          ]);
         }
       } finally {
         if (!cancelled) setHistoryReady(true);
       }
     })();
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -179,9 +208,12 @@ function BuddyChatInner() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = () =>
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  useEffect(() => { scrollToBottom(); }, [messages, isLoading]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   const clearChat = async () => {
     if (isLoading || !historyReady) return;
@@ -192,9 +224,18 @@ function BuddyChatInner() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ deviceId }),
       });
-    } catch { return; }
+    } catch {
+      return;
+    }
     localStorage.removeItem(STORAGE_KEY);
-    setMessages([{ id: "welcome", role: "buddy", content: getWelcomeMessage(firstName), timestamp: new Date() }]);
+    setMessages([
+      {
+        id: "welcome",
+        role: "buddy",
+        content: getWelcomeMessage(firstName),
+        timestamp: new Date(),
+      },
+    ]);
   };
 
   const sendMessage = async (text: string) => {
@@ -218,19 +259,40 @@ function BuddyChatInner() {
       const res = await fetch("/api/buddy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text.trim(), deviceId, crisisContext: crisisContextRef.current }),
+        body: JSON.stringify({
+          message: text.trim(),
+          deviceId,
+          crisisContext: crisisContextRef.current,
+        }),
       });
 
-      const fallbackMsg = "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.";
+      const fallbackMsg =
+        "I'm having trouble connecting right now. Can you try again in a moment? In the meantime, if this is urgent, call 211 for immediate help.";
 
       if (!res.ok) {
-        setMessages((prev) => [...prev, { id: `buddy-${Date.now()}`, role: "buddy", content: fallbackMsg, timestamp: new Date() }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `buddy-${Date.now()}`,
+            role: "buddy",
+            content: fallbackMsg,
+            timestamp: new Date(),
+          },
+        ]);
         return;
       }
 
       const body = res.body;
       if (!body) {
-        setMessages((prev) => [...prev, { id: `buddy-${Date.now()}`, role: "buddy", content: fallbackMsg, timestamp: new Date() }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `buddy-${Date.now()}`,
+            role: "buddy",
+            content: fallbackMsg,
+            timestamp: new Date(),
+          },
+        ]);
         return;
       }
 
@@ -246,22 +308,55 @@ function BuddyChatInner() {
           accumulated += decoder.decode(value, { stream: true });
           if (!buddyId) {
             buddyId = `buddy-${Date.now()}`;
-            setMessages((prev) => [...prev, { id: buddyId!, role: "buddy", content: accumulated, timestamp: new Date() }]);
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: buddyId!,
+                role: "buddy",
+                content: accumulated,
+                timestamp: new Date(),
+              },
+            ]);
             setIsLoading(false);
           } else {
-            setMessages((prev) => prev.map((m) => m.id === buddyId ? { ...m, content: accumulated } : m));
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === buddyId ? { ...m, content: accumulated } : m
+              )
+            );
           }
         }
-        if (buddyId) setMessages((prev) => { saveToLocalStorage(prev); return prev; });
+        if (buddyId)
+          setMessages((prev) => {
+            saveToLocalStorage(prev);
+            return prev;
+          });
       } finally {
         reader.releaseLock();
       }
 
       if (!buddyId) {
-        setMessages((prev) => [...prev, { id: `buddy-${Date.now()}`, role: "buddy", content: fallbackMsg, timestamp: new Date() }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `buddy-${Date.now()}`,
+            role: "buddy",
+            content: fallbackMsg,
+            timestamp: new Date(),
+          },
+        ]);
       }
     } catch {
-      setMessages((prev) => [...prev, { id: `buddy-error-${Date.now()}`, role: "buddy", content: "Something went wrong on my end. Please try again — I'm here for you.", timestamp: new Date() }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `buddy-error-${Date.now()}`,
+          role: "buddy",
+          content:
+            "Something went wrong on my end. Please try again — I'm here for you.",
+          timestamp: new Date(),
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -285,43 +380,51 @@ function BuddyChatInner() {
   return (
     <AppShell>
       <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen">
-        {/* Chat header */}
-        <div className="px-4 sm:px-6 lg:px-8 py-3.5 border-b border-border bg-card/80 backdrop-blur-md">
+
+        {/* ── Header ── */}
+        <div className="px-4 sm:px-6 py-3 border-b border-border bg-card">
           <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
               <BuddyAvatar />
               <div>
-                <h1 className="text-sm font-bold text-foreground">ShockPlan Buddy</h1>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <h1 className="text-sm font-semibold text-foreground leading-tight">
+                  ShockPlan Buddy
+                </h1>
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                   <Sparkles className="h-3 w-3" />
                   AI-powered financial companion
                 </p>
               </div>
             </div>
-            <Button
+            <button
               type="button"
-              variant="outline"
-              size="sm"
-              className="shrink-0 gap-1.5 rounded-xl h-8 text-xs"
               onClick={clearChat}
-              disabled={!historyReady || isLoading || !messages.some((m) => m.id !== "welcome")}
+              disabled={
+                !historyReady ||
+                isLoading ||
+                !messages.some((m) => m.id !== "welcome")
+              }
               title="Clear saved chat"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                         text-muted-foreground border border-border bg-background
+                         hover:bg-muted hover:text-foreground transition-colors
+                         disabled:opacity-40 disabled:pointer-events-none"
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Clear chat</span>
-            </Button>
+            </button>
           </div>
         </div>
 
-        {/* Messages area */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 bg-muted/20">
-          <div className="max-w-3xl mx-auto space-y-5">
+        {/* ── Messages area ── */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 bg-background">
+          <div className="max-w-3xl mx-auto space-y-4">
             {!historyReady ? (
-              <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:0ms]" />
-                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:150ms]" />
-                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce [animation-delay:300ms]" />
+              <div className="flex items-center justify-center gap-1.5 py-16">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:0ms]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:150ms]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:300ms]" />
               </div>
             ) : (
               messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
@@ -331,17 +434,21 @@ function BuddyChatInner() {
           </div>
         </div>
 
-        {/* Quick action chips */}
+        {/* ── Quick chips ── */}
         {showChips && (
-          <div className="px-4 sm:px-6 lg:px-8 pb-2 bg-card/80">
-            <div className="max-w-3xl mx-auto">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Try asking:</p>
-              <div className="flex flex-wrap gap-2">
+          <div className="px-4 sm:px-6 pb-2 bg-card border-t border-border">
+            <div className="max-w-3xl mx-auto pt-3">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">
+                Try asking
+              </p>
+              <div className="flex flex-wrap gap-1.5">
                 {QUICK_CHIPS.map((chip) => (
                   <button
                     key={chip}
                     onClick={() => sendMessage(chip)}
-                    className="text-xs px-3 py-1.5 rounded-full border border-border bg-card hover:bg-primary/5 hover:border-primary/30 text-foreground transition-all"
+                    className="text-xs px-3 py-1.5 rounded-full border border-border bg-background
+                               hover:bg-[#FEFAE8] hover:border-[#F5C518]/40 text-foreground
+                               transition-all duration-150"
                   >
                     {chip}
                   </button>
@@ -351,10 +458,10 @@ function BuddyChatInner() {
           </div>
         )}
 
-        {/* Input area */}
-        <div className="px-4 sm:px-6 lg:px-8 py-4 border-t border-border bg-card/90 backdrop-blur-md">
-          <div className="max-w-3xl mx-auto flex items-end gap-2.5">
-            <div className="flex-1 relative">
+        {/* ── Input area ── */}
+        <div className="px-4 sm:px-6 py-3 border-t border-border bg-card">
+          <div className="max-w-3xl mx-auto flex items-end gap-2">
+            <div className="flex-1">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -362,23 +469,30 @@ function BuddyChatInner() {
                 onKeyDown={handleKeyDown}
                 placeholder="Ask anything about your finances…"
                 rows={1}
-                className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                className="w-full resize-none rounded-[10px] border border-border bg-background
+                           px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground
+                           focus:outline-none focus:ring-2 focus:ring-[#F5C518]/40 focus:border-[#F5C518]/50
+                           transition-all disabled:opacity-50"
                 disabled={isLoading || !historyReady}
               />
             </div>
-            <Button
-              size="icon"
+            <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isLoading || !historyReady}
-              className="rounded-xl h-11 w-11 shrink-0 bg-linear-to-br from-primary to-primary/80 shadow-sm"
+              className="flex items-center justify-center w-10 h-10 rounded-[10px] shrink-0
+                         bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]
+                         hover:bg-[#333] dark:hover:bg-gray-100
+                         disabled:opacity-40 disabled:pointer-events-none
+                         transition-colors"
             >
               <Send className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
-          <p className="max-w-3xl mx-auto text-[10px] text-muted-foreground/50 mt-2 text-center">
+          <p className="max-w-3xl mx-auto text-[10px] text-muted-foreground/40 mt-2 text-center">
             ShockPlan provides educational information only — not financial advice.
           </p>
         </div>
+
       </div>
     </AppShell>
   );
@@ -389,10 +503,10 @@ export default function BuddyPage() {
     <Suspense
       fallback={
         <AppShell>
-          <div className="flex items-center justify-center h-screen gap-2 text-muted-foreground">
-            <div className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:0ms]" />
-            <div className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:150ms]" />
-            <div className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:300ms]" />
+          <div className="flex items-center justify-center h-screen gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:0ms]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:150ms]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-bounce [animation-delay:300ms]" />
           </div>
         </AppShell>
       }

@@ -40,10 +40,10 @@ function NodeCaption({ caption }: { caption?: string }) {
 function LifeRootNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
   return (
     <div className="w-[210px]">
-      <Handle type="source" position={Position.Right} className="!bg-primary !w-2 !h-2 !border-0" />
-      <Card className="border-2 border-primary/30 bg-primary/5 shadow-sm">
+      <Handle type="source" position={Position.Right} className="!bg-[#333333] !w-2 !h-2 !border-0" />
+      <Card className="border border-border bg-card shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
         <CardContent className="p-3">
-          <p className="text-sm font-bold text-foreground leading-tight">{data.label}</p>
+          <p className="text-sm font-medium text-foreground leading-tight">{data.label}</p>
           <p className="text-[10px] text-muted-foreground mt-1">Start here</p>
           <NodeCaption caption={data.caption} />
         </CardContent>
@@ -57,9 +57,9 @@ function LifeDecisionNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
     <div className="w-[210px]">
       <Handle type="target" position={Position.Left} className="!bg-muted-foreground !w-2 !h-2 !border-0" />
       <Handle type="source" position={Position.Right} className="!bg-muted-foreground !w-2 !h-2 !border-0" />
-      <Card className="border-2 border-dashed border-border bg-muted/20 shadow-sm">
+      <Card className="border border-dashed border-border bg-muted/20 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
         <CardContent className="p-3">
-          <p className="text-sm font-bold text-foreground leading-tight">{data.label}</p>
+          <p className="text-sm font-medium text-foreground leading-tight">{data.label}</p>
           <p className="text-[10px] text-muted-foreground mt-1.5">Tap an outcome node to choose a branch.</p>
           <NodeCaption caption={data.caption} />
         </CardContent>
@@ -72,11 +72,11 @@ function LifeOutcomeNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
   const risk = data.risk ?? "stable";
   return (
     <div className={`w-[210px] transition-opacity ${data.dimmed ? "opacity-40" : "opacity-100"}`}>
-      <Handle type="target" position={Position.Left} className="!w-2 !h-2 !border-0" style={{ background: risk === "stable" ? "#22c55e" : risk === "risky" ? "#f59e0b" : "#ef4444" }} />
-      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !border-0" style={{ background: risk === "stable" ? "#22c55e" : risk === "risky" ? "#f59e0b" : "#ef4444" }} />
-      <Card className={`border-2 shadow-sm transition-shadow ${RISK_BG_CLASS[risk]} ${data.selected ? "ring-2 ring-primary shadow-md" : ""}`}>
+      <Handle type="target" position={Position.Left} className="!bg-[#333333] !w-2 !h-2 !border-0" />
+      <Handle type="source" position={Position.Right} className="!bg-[#333333] !w-2 !h-2 !border-0" />
+      <Card className={`border shadow-[0_1px_4px_rgba(0,0,0,0.05)] transition-shadow ${RISK_BG_CLASS[risk]} ${data.selected ? "ring-2 ring-primary shadow-md" : ""}`}>
         <CardContent className="p-3 flex flex-col gap-0.5">
-          <p className="text-xs font-bold text-foreground leading-snug">{data.label}</p>
+          <p className="text-xs font-medium text-foreground leading-snug">{data.label}</p>
           <p className="text-[10px] text-muted-foreground">
             {fmtMoney(data.income ?? 0)} in | {fmtMoney(data.expense ?? 0)} out / mo
           </p>
@@ -92,11 +92,11 @@ function LifeExtraNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
   const risk = data.risk ?? "stable";
   return (
     <div className="w-[210px]">
-      <Handle type="target" position={Position.Left} className="!w-2 !h-2 !border-0" style={{ background: "#6366f1" }} />
-      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !border-0 opacity-0 pointer-events-none" />
-      <Card className={`border-2 shadow-sm transition-shadow ${RISK_BG_CLASS[risk]} ${data.selected ? "ring-2 ring-primary shadow-md" : ""}`}>
+      <Handle type="target" position={Position.Left} className="!bg-[#333333] !w-2 !h-2 !border-0" />
+      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !border-0 opacity-0 pointer-events-none !bg-[#333333]" />
+      <Card className={`border shadow-[0_1px_4px_rgba(0,0,0,0.05)] transition-shadow ${RISK_BG_CLASS[risk]} ${data.selected ? "ring-2 ring-primary shadow-md" : ""}`}>
         <CardContent className="p-3 flex flex-col gap-1">
-          <p className="text-xs font-bold text-foreground">{data.label}</p>
+          <p className="text-xs font-medium text-foreground">{data.label}</p>
           <p className="text-[10px] text-muted-foreground">
             {fmtMoney((data.income ?? 0) - (data.expense ?? 0))}/mo | {RISK_LABEL[risk]}
           </p>
@@ -184,7 +184,7 @@ export function LifePathReactFlow({
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
-          nodesDraggable={false}
+          nodesDraggable={true}
           nodesConnectable={false}
           elementsSelectable={true}
           panOnScroll
@@ -192,13 +192,13 @@ export function LifePathReactFlow({
           minZoom={0.4}
           maxZoom={1.5}
           proOptions={{ hideAttribution: true }}
-          className="rounded-2xl h-full w-full"
+          className="rounded-[10px] h-full w-full"
         >
           <Background gap={16} size={1} className="bg-transparent" />
           <Controls className="!bg-card !border-border !shadow-sm" />
           <MiniMap
             className="!bg-card/90 !border-border rounded-lg"
-            maskColor="oklch(0.2 0.02 260 / 0.12)"
+            maskColor="rgba(0,0,0,0.12)"
             nodeStrokeWidth={2}
           />
           <FitViewOnChange templateId={template.id} extraCount={customEvents.length} />

@@ -39,9 +39,10 @@ export const EVENT_CATEGORY_LABEL: Record<LifePathCustomEvent["category"], strin
 };
 
 export const RISK_BG_CLASS: Record<PathRiskLevel, string> = {
-  stable: "bg-green-500/15 border-green-500/40 text-green-700 dark:text-green-400",
-  risky: "bg-amber-500/15 border-amber-500/40 text-amber-800 dark:text-amber-300",
-  crisis: "bg-red-500/15 border-red-500/40 text-red-800 dark:text-red-300",
+  stable: "bg-card border border-border text-card-foreground",
+  risky: "bg-muted/35 border border-border text-card-foreground",
+  crisis:
+    "bg-[#222222] border border-[#333333] text-white [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/70",
 };
 
 export const RISK_LABEL: Record<PathRiskLevel, string> = {

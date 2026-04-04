@@ -61,11 +61,11 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
                     alt=""
                     width={32}
                     height={32}
-                    className="w-8 h-8 rounded-full shrink-0 ring-2 ring-primary/20"
+                    className="w-8 h-8 rounded-full shrink-0 ring-2 ring-[#F5C518]/40"
                     referrerPolicy="no-referrer"
                 />
             ) : (
-                <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary/30 to-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/20">
+                <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary/30 to-primary/10 flex items-center justify-center shrink-0 ring-2 ring-[#F5C518]/40">
                     <span className="text-xs font-bold text-primary">
                         {user.name?.charAt(0)?.toUpperCase() || "U"}
                     </span>
@@ -100,8 +100,8 @@ function SidebarContent({ pathname, collapsed }: { pathname: string; collapsed?:
         <>
             {/* Logo */}
             <div className="flex items-center gap-2.5 px-4 py-5">
-                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-linear-to-br from-primary to-primary/70 shadow-md shrink-0">
-                    <Shield className="h-5 w-5 text-primary-foreground" />
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#1A1A1A] shadow-md shrink-0">
+                    <Shield className="h-5 w-5 text-[#F5C518]" />
                 </div>
                 {!collapsed && (
                     <span className="text-lg font-bold tracking-tight text-foreground">
@@ -120,11 +120,11 @@ function SidebarContent({ pathname, collapsed }: { pathname: string; collapsed?:
                             key={href}
                             href={href}
                             className={[
-                                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
                                 isActive && isCrisis
                                     ? "bg-destructive/10 text-destructive font-semibold"
                                     : isActive
-                                      ? "bg-primary/10 text-primary font-semibold"
+                                      ? "bg-[#1A1A1A] text-white dark:bg-white dark:text-[#1A1A1A] font-semibold"
                                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                             ].join(" ")}
                         >
@@ -190,7 +190,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
                                             isActive && isCrisis
                                                 ? "bg-destructive/10"
                                                 : isActive
-                                                  ? "bg-primary/10"
+                                                  ? "bg-[#1A1A1A] dark:bg-white"
                                                   : "",
                                         ].join(" ")}
                                     >
@@ -200,7 +200,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
                                                 isActive && isCrisis
                                                     ? "text-destructive stroke-[2.2px]"
                                                     : isActive
-                                                      ? "text-primary stroke-[2.2px]"
+                                                      ? "text-white dark:text-[#1A1A1A] stroke-[2.2px]"
                                                       : "text-muted-foreground stroke-[1.6px]",
                                             ].join(" ")}
                                         />
@@ -211,7 +211,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
                                             isActive && isCrisis
                                                 ? "text-destructive"
                                                 : isActive
-                                                  ? "text-primary"
+                                                  ? "text-[#1A1A1A] dark:text-white"
                                                   : "text-muted-foreground",
                                         ].join(" ")}
                                     >
@@ -219,7 +219,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
                                     </span>
                                     {isActive && (
                                         <span
-                                            className={`w-1 h-1 rounded-full ${isCrisis ? "bg-destructive" : "bg-primary"}`}
+                                            className={`w-1 h-1 rounded-full ${isCrisis ? "bg-destructive" : "bg-[#F5C518]"}`}
                                         />
                                     )}
                                 </Link>
@@ -276,8 +276,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             <Menu className="h-5 w-5" />
                         </Button>
                         <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-linear-to-br from-primary to-primary/70 shadow-sm">
-                                <Shield className="h-4 w-4 text-primary-foreground" />
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1A1A1A] shadow-sm">
+                                <Shield className="h-4 w-4 text-[#F5C518]" />
                             </div>
                             <span className="text-lg font-bold tracking-tight text-foreground">
                                 ShockPlan
