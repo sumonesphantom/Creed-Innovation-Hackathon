@@ -90,6 +90,50 @@ const BuddyChatSchema = new Schema({
 
 BuddyChatSchema.index({ userId: 1, deviceId: 1 });
 
+const FlowPlanCustomEventSchema = new Schema(
+  {
+    id: { type: String, required: true },
+    label: { type: String, required: true },
+    category: { type: String, required: true },
+    monthlyIncomeDelta: { type: Number, default: 0 },
+    monthlyExpenseDelta: { type: Number, default: 0 },
+    oneTimeCashDelta: { type: Number, default: 0 },
+    startMonthOffset: { type: Number, default: 0 },
+    durationMonths: { type: Number, default: 1 },
+    risk: { type: String, default: "stable" },
+    notes: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
+const FlowPlanManualMilestoneSchema = new Schema(
+  {
+    id: { type: String, required: true },
+    title: { type: String, required: true },
+    detail: { type: String, default: "" },
+    phase: { type: String, required: true },
+    done: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+const FlowPlanSchema = new Schema({
+  deviceId: { type: String, default: "", index: true },
+  userId: { type: String, default: "", index: true },
+  name: { type: String, required: true, maxlength: 120 },
+  templateId: { type: String, required: true },
+  selections: { type: Map, of: Number, default: {} },
+  customEvents: { type: [FlowPlanCustomEventSchema], default: [] },
+  manualMilestones: { type: [FlowPlanManualMilestoneSchema], default: [] },
+  generatedMilestoneCompletion: { type: Map, of: Boolean, default: {} },
+  notes: { type: String, default: "" },
+  zoom: { type: String, default: "year" },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
+FlowPlanSchema.index({ userId: 1, deviceId: 1, updatedAt: -1 });
+
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
 export const User =
@@ -104,3 +148,5 @@ export const VaultMetadata =
   mongoose.models.VaultMetadata || mongoose.model("VaultMetadata", VaultMetadataSchema);
 export const BuddyChat =
   mongoose.models.BuddyChat || mongoose.model("BuddyChat", BuddyChatSchema);
+export const FlowPlan =
+  mongoose.models.FlowPlan || mongoose.model("FlowPlan", FlowPlanSchema);

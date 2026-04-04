@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import "@xyflow/react/dist/style.css";
 
@@ -19,18 +19,22 @@ import {
   type Edge,
 } from "@xyflow/react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   buildLifePathFlowElements,
   type LifePathFlowNodeData,
 } from "@/lib/life-path-flow-layout";
 import { RISK_BG_CLASS, RISK_LABEL } from "@/lib/life-path";
-import type { LifePathExtraEvent, LifePathTemplate } from "@/types";
+import type { LifePathCustomEvent, LifePathTemplate } from "@/types";
 
 function fmtMoney(n: number) {
   const abs = Math.abs(n);
   const s = abs.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   return n < 0 ? `-${s}` : s;
+}
+
+function NodeCaption({ caption }: { caption?: string }) {
+  if (!caption) return null;
+  return <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">{caption}</p>;
 }
 
 function LifeRootNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
@@ -41,6 +45,7 @@ function LifeRootNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
         <CardContent className="p-3">
           <p className="text-sm font-bold text-foreground leading-tight">{data.label}</p>
           <p className="text-[10px] text-muted-foreground mt-1">Start here</p>
+          <NodeCaption caption={data.caption} />
         </CardContent>
       </Card>
     </div>
@@ -56,6 +61,7 @@ function LifeDecisionNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
         <CardContent className="p-3">
           <p className="text-sm font-bold text-foreground leading-tight">{data.label}</p>
           <p className="text-[10px] text-muted-foreground mt-1.5">Tap an outcome node to choose a branch.</p>
+          <NodeCaption caption={data.caption} />
         </CardContent>
       </Card>
     </div>
@@ -68,13 +74,14 @@ function LifeOutcomeNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
     <div className={`w-[210px] transition-opacity ${data.dimmed ? "opacity-40" : "opacity-100"}`}>
       <Handle type="target" position={Position.Left} className="!w-2 !h-2 !border-0" style={{ background: risk === "stable" ? "#22c55e" : risk === "risky" ? "#f59e0b" : "#ef4444" }} />
       <Handle type="source" position={Position.Right} className="!w-2 !h-2 !border-0" style={{ background: risk === "stable" ? "#22c55e" : risk === "risky" ? "#f59e0b" : "#ef4444" }} />
-      <Card className={`border-2 shadow-sm ${RISK_BG_CLASS[risk]}`}>
+      <Card className={`border-2 shadow-sm transition-shadow ${RISK_BG_CLASS[risk]} ${data.selected ? "ring-2 ring-primary shadow-md" : ""}`}>
         <CardContent className="p-3 flex flex-col gap-0.5">
           <p className="text-xs font-bold text-foreground leading-snug">{data.label}</p>
           <p className="text-[10px] text-muted-foreground">
-            {fmtMoney(data.income ?? 0)} in · {fmtMoney(data.expense ?? 0)} out / mo
+            {fmtMoney(data.income ?? 0)} in | {fmtMoney(data.expense ?? 0)} out / mo
           </p>
           <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">{RISK_LABEL[risk]}</p>
+          <NodeCaption caption={data.caption} />
         </CardContent>
       </Card>
     </div>
@@ -87,26 +94,14 @@ function LifeExtraNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
     <div className="w-[210px]">
       <Handle type="target" position={Position.Left} className="!w-2 !h-2 !border-0" style={{ background: "#6366f1" }} />
       <Handle type="source" position={Position.Right} className="!w-2 !h-2 !border-0 opacity-0 pointer-events-none" />
-      <Card className={`border-2 shadow-sm ${RISK_BG_CLASS[risk]}`}>
+      <Card className={`border-2 shadow-sm transition-shadow ${RISK_BG_CLASS[risk]} ${data.selected ? "ring-2 ring-primary shadow-md" : ""}`}>
         <CardContent className="p-3 flex flex-col gap-1">
           <p className="text-xs font-bold text-foreground">{data.label}</p>
           <p className="text-[10px] text-muted-foreground">
-            {fmtMoney((data.income ?? 0) - (data.expense ?? 0))}/mo · {RISK_LABEL[risk]}
+            {fmtMoney((data.income ?? 0) - (data.expense ?? 0))}/mo | {RISK_LABEL[risk]}
           </p>
-          {data.onRemove && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              className="self-end h-6 text-[10px]"
-              onClick={(e) => {
-                e.stopPropagation();
-                data.onRemove?.();
-              }}
-            >
-              Remove
-            </Button>
-          )}
+          <NodeCaption caption={data.caption} />
+          <p className="text-[10px] text-muted-foreground">Tap to edit</p>
         </CardContent>
       </Card>
     </div>
@@ -135,35 +130,34 @@ export interface LifePathReactFlowProps {
   template: LifePathTemplate;
   selections: Record<string, number>;
   setSelections: React.Dispatch<React.SetStateAction<Record<string, number>>>;
-  extraEvents: LifePathExtraEvent[];
-  onRemoveExtra: (id: string) => void;
+  customEvents: LifePathCustomEvent[];
+  selectedCustomEventId?: string;
+  onSelectCustomEvent: (id: string) => void;
 }
 
 export function LifePathReactFlow({
   template,
   selections,
   setSelections,
-  extraEvents,
-  onRemoveExtra,
+  customEvents,
+  selectedCustomEventId,
+  onSelectCustomEvent,
 }: LifePathReactFlowProps) {
-  const removeCb = useCallback(
-    (id: string) => {
-      onRemoveExtra(id);
-    },
-    [onRemoveExtra]
-  );
-
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<LifePathFlowNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   useEffect(() => {
-    const built = buildLifePathFlowElements(template, selections, extraEvents, removeCb);
+    const built = buildLifePathFlowElements(template, selections, customEvents, selectedCustomEventId);
     setNodes(built.nodes);
     setEdges(built.edges);
-  }, [template, selections, extraEvents, removeCb, setNodes, setEdges]);
+  }, [template, selections, customEvents, selectedCustomEventId, setNodes, setEdges]);
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
+      if (node.type === "lifeExtra") {
+        onSelectCustomEvent(node.id);
+        return;
+      }
       if (node.type !== "lifeOutcome") return;
       const def = template.nodes.find((n) => n.id === node.id);
       if (!def || def.type !== "outcome") return;
@@ -177,7 +171,7 @@ export function LifePathReactFlow({
       if (idx < 0) return;
       setSelections((s) => ({ ...s, [parent.id]: idx }));
     },
-    [template, setSelections]
+    [template, setSelections, onSelectCustomEvent]
   );
 
   return (
@@ -207,7 +201,7 @@ export function LifePathReactFlow({
             maskColor="oklch(0.2 0.02 260 / 0.12)"
             nodeStrokeWidth={2}
           />
-          <FitViewOnChange templateId={template.id} extraCount={extraEvents.length} />
+          <FitViewOnChange templateId={template.id} extraCount={customEvents.length} />
         </ReactFlow>
       </div>
     </ReactFlowProvider>

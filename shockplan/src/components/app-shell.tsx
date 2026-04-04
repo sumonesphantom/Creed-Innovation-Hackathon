@@ -61,6 +61,8 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
                 <Image
                     src={user.picture}
                     alt=""
+                    width={28}
+                    height={28}
                     className="w-7 h-7 rounded-full shrink-0"
                     referrerPolicy="no-referrer"
                 />

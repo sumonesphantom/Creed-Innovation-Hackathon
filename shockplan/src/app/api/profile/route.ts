@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { Profile, Score, VaultMetadata } from "@/lib/models";
+import { FlowPlan, Profile, Score, VaultMetadata } from "@/lib/models";
 import { getUserIdentifier, buildUserQuery } from "@/lib/get-user";
 
 export async function GET(request: NextRequest) {
@@ -85,6 +85,7 @@ export async function DELETE(request: NextRequest) {
   await Profile.deleteOne(query);
   await Score.deleteMany(query);
   await VaultMetadata.deleteMany(query);
+  await FlowPlan.deleteMany(query);
 
   return NextResponse.json({ success: true });
 }

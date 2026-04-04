@@ -1,17 +1,17 @@
 import type { Edge, Node } from "@xyflow/react";
+import { edgeRiskForChild, getPathThroughTemplate, layoutColumns, nodesByDepth } from "@/lib/life-path";
+import type { LifePathCustomEvent, LifePathNodeDef, LifePathTemplate, PathRiskLevel } from "@/types";
 
 export type LifePathFlowNodeData = {
   kind: string;
   label: string;
+  caption?: string;
   dimmed?: boolean;
+  selected?: boolean;
   risk?: PathRiskLevel;
   income?: number;
   expense?: number;
-  onRemove?: () => void;
-  removeId?: string;
 };
-import { layoutColumns, nodesByDepth, edgeRiskForChild, getPathThroughTemplate } from "@/lib/life-path";
-import type { LifePathExtraEvent, LifePathNodeDef, LifePathTemplate, PathRiskLevel } from "@/types";
 
 const COL_GAP = 280;
 const ROW_GAP = 130;
@@ -56,8 +56,8 @@ function isEdgeActive(
 export function buildLifePathFlowElements(
   template: LifePathTemplate,
   selections: Record<string, number>,
-  extraEvents: LifePathExtraEvent[],
-  onRemoveExtra?: (id: string) => void
+  customEvents: LifePathCustomEvent[],
+  selectedCustomEventId?: string
 ): { nodes: Node<LifePathFlowNodeData>[]; edges: Edge[] } {
   const depthMap = layoutColumns(template);
   const byCol = nodesByDepth(template);
@@ -91,6 +91,7 @@ export function buildLifePathFlowElements(
         data: {
           kind: def.type,
           label: def.label,
+          caption: def.summary,
           dimmed: def.type === "outcome" ? !onPath : false,
           risk,
           income: def.monthlyIncomeDelta,
@@ -126,33 +127,33 @@ export function buildLifePathFlowElements(
     attachY = leafNode.position.y;
   }
 
-  extraEvents.forEach((ex, i) => {
+  customEvents.forEach((event, i) => {
     const y = attachY + i * ROW_GAP;
     nodes.push({
-      id: ex.id,
+      id: event.id,
       type: "lifeExtra",
       position: { x: attachX, y },
       data: {
         kind: "extra",
-        label: ex.label,
-        risk: ex.risk,
-        income: ex.monthlyIncomeDelta,
-        expense: ex.monthlyExpenseDelta,
-        removeId: ex.id,
-        onRemove: onRemoveExtra ? () => onRemoveExtra(ex.id) : undefined,
+        label: event.label,
+        caption: `Starts month ${event.startMonthOffset + 1} | ${event.durationMonths} months`,
+        risk: event.risk,
+        income: event.monthlyIncomeDelta,
+        expense: event.monthlyExpenseDelta,
+        selected: selectedCustomEventId === event.id,
       },
     });
 
-    const fromId = i === 0 ? leaf?.id : extraEvents[i - 1].id;
+    const fromId = i === 0 ? leaf?.id : customEvents[i - 1].id;
     if (fromId) {
       edges.push({
-        id: `extra-edge-${fromId}-${ex.id}`,
+        id: `extra-edge-${fromId}-${event.id}`,
         source: fromId,
-        target: ex.id,
+        target: event.id,
         type: "smoothstep",
         animated: true,
         style: {
-          stroke: STROKE[ex.risk],
+          stroke: STROKE[event.risk],
           strokeWidth: 2,
           opacity: 0.9,
         },

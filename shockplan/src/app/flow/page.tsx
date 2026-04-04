@@ -2,7 +2,7 @@
 
 import { GitBranch } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { LifePathCanvas } from "@/components/life-path-canvas";
+import { FlowOfLifePlanner } from "@/components/flow-of-life-planner";
 
 export default function FlowPage() {
   return (
@@ -23,8 +23,9 @@ export default function FlowPage() {
           </p>
         </section>
 
-        <LifePathCanvas />
+        <FlowOfLifePlanner />
       </div>
     </AppShell>
   );
 }
+

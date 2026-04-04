@@ -146,8 +146,27 @@ export interface BudgetCalculationResult {
 }
 
 export type PathRiskLevel = "stable" | "risky" | "crisis";
+export type LifePathZoom = "month" | "year" | "fiveYear";
+export type LifePathEventCategory =
+  | "income"
+  | "housing"
+  | "family"
+  | "health"
+  | "debt"
+  | "transport"
+  | "education"
+  | "benefits"
+  | "savings"
+  | "other";
+export type LifePathMilestonePhase = "now" | "next30" | "oneToThreeMonths" | "later";
 
 export type LifePathNodeType = "root" | "decision" | "outcome";
+
+export interface LifePathMilestoneTemplate {
+  phase: LifePathMilestonePhase;
+  title: string;
+  detail?: string;
+}
 
 export interface LifePathNodeDef {
   id: string;
@@ -156,6 +175,8 @@ export interface LifePathNodeDef {
   monthlyIncomeDelta: number;
   monthlyExpenseDelta: number;
   monthsToStability: number;
+  summary?: string;
+  milestoneTemplates?: LifePathMilestoneTemplate[];
 }
 
 export interface LifePathEdgeDef {
@@ -173,13 +194,72 @@ export interface LifePathTemplate {
   edges: LifePathEdgeDef[];
 }
 
-export interface LifePathExtraEvent {
+export interface LifePathCustomEvent {
   id: string;
   label: string;
+  category: LifePathEventCategory;
   monthlyIncomeDelta: number;
   monthlyExpenseDelta: number;
-  monthsToStability: number;
+  oneTimeCashDelta: number;
+  startMonthOffset: number;
+  durationMonths: number;
   risk: PathRiskLevel;
+  notes: string;
+}
+
+export type LifePathExtraEvent = LifePathCustomEvent;
+
+export interface LifePathManualMilestone {
+  id: string;
+  title: string;
+  detail: string;
+  phase: LifePathMilestonePhase;
+  done: boolean;
+}
+
+export interface LifePathScenario {
+  id: string;
+  deviceId?: string;
+  userId?: string;
+  name: string;
+  templateId: string;
+  selections: Record<string, number>;
+  customEvents: LifePathCustomEvent[];
+  manualMilestones: LifePathManualMilestone[];
+  generatedMilestoneCompletion: Record<string, boolean>;
+  notes: string;
+  zoom: LifePathZoom;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LifePathProjectionMonth {
+  month: number;
+  label: string;
+  incomeDelta: number;
+  expenseDelta: number;
+  oneTimeCashDelta: number;
+  netChange: number;
+  cumulativeSwing: number;
+  activeEvents: string[];
+}
+
+export interface LifePathProjectionSummary {
+  currentMonthlyIncomeDelta: number;
+  currentMonthlyExpenseDelta: number;
+  currentNetMonthly: number;
+  averageNetMonthly: number;
+  projectedSwing: number;
+  stabilityMonths: number;
+  highestCumulativeSwing: number;
+  lowestCumulativeSwing: number;
+}
+
+export interface GeneratedLifePathMilestone {
+  sourceKey: string;
+  title: string;
+  detail: string;
+  phase: LifePathMilestonePhase;
 }
 
 export interface ChatMessage {

@@ -95,14 +95,11 @@ function ReadinessRing({ score, breakdown }: { score: number; breakdown: Breakdo
                 <span className="inline-flex items-center gap-1">
                   {label}
                   <Popover>
-                    <PopoverTrigger>
-                      <button
-                        type="button"
-                        className="inline-flex rounded-md p-0.5 text-muted-foreground hover:text-foreground"
-                        aria-label={`Why ${label}`}
-                      >
-                        <HelpCircle className="h-3.5 w-3.5" />
-                      </button>
+                    <PopoverTrigger
+                      className="inline-flex rounded-md p-0.5 text-muted-foreground hover:text-foreground"
+                      aria-label={`Why ${label}`}
+                    >
+                      <HelpCircle className="h-3.5 w-3.5" />
                     </PopoverTrigger>
                     <PopoverContent className="text-xs w-72 text-popover-foreground">
                       {SCORE_WHY[label]}

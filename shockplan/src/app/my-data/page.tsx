@@ -118,17 +118,28 @@ export default function MyDataPage() {
       }));
   })();
 
-  function handleExport() {
+  async function handleExport() {
     const deviceId = localStorage.getItem("shockplan_device_id") || "";
     const snapshot = getShockPlanLocalSnapshot();
     const parsedLocal: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(snapshot)) {
       parsedLocal[k] = typeof v === "string" ? parseJsonSafe(v) : v;
     }
+    let flowPlans: unknown[] | null = null;
+    try {
+      const flowRes = await fetch(`/api/flow-plans?deviceId=${encodeURIComponent(deviceId)}`);
+      if (flowRes.ok) {
+        const flowData = (await flowRes.json()) as { items?: unknown[] };
+        flowPlans = flowData.items ?? [];
+      }
+    } catch {
+      flowPlans = null;
+    }
     const payload = {
       exportedAt: new Date().toISOString(),
       serverProfile,
       serverScore,
+      flowPlans,
       localStorage: parsedLocal,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
