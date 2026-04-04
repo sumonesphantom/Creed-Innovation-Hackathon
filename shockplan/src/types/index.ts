@@ -56,10 +56,11 @@ export interface CommunityPost {
 
 export interface VaultItem {
   _id?: string;
-  deviceId: string;
+  deviceId?: string;
+  userId?: string;
   fileName: string;
   fileType: string;
-  category: "insurance" | "id" | "receipt" | "photo" | "other";
+  category: "insurance" | "id" | "lease" | "medical" | "financial";
   uploadedAt: Date;
 }
 

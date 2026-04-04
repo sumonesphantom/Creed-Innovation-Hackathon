@@ -9,6 +9,8 @@ import {
     AlertTriangle,
     DollarSign,
     GitBranch,
+    Users,
+    FolderLock,
     Shield,
     Settings,
     Menu,
@@ -28,6 +30,8 @@ const navItems = [
     { label: "Crisis", href: "/crisis", icon: AlertTriangle },
     { label: "Budget", href: "/budget", icon: DollarSign },
     { label: "Flow", href: "/flow", icon: GitBranch },
+    { label: "Community", href: "/community", icon: Users },
+    { label: "Vault", href: "/vault", icon: FolderLock },
     { label: "My Data", href: "/my-data", icon: Settings },
 ] as const;
 
@@ -154,13 +158,16 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
             aria-label="Main navigation"
             className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
         >
-            <div className="bg-card border-t border-border backdrop-blur-lg">
-                <ul className="flex items-center h-16 px-1" role="list">
+            <div className="bg-card border-t border-border backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)]">
+                <ul
+                    className="flex flex-nowrap items-stretch min-h-16 overflow-x-auto overflow-y-hidden overscroll-x-contain [-webkit-overflow-scrolling:touch] px-1 gap-0.5"
+                    role="list"
+                >
                     {navItems.map(({ label, href, icon: Icon }) => {
                         const isActive = pathname === href;
                         const isCrisis = href === "/crisis";
                         return (
-                            <li key={href} className="flex-1">
+                            <li key={href} className="flex-shrink-0 w-[4.5rem] sm:w-[4.75rem]">
                                 <Link
                                     href={href}
                                     aria-current={isActive ? "page" : undefined}
@@ -189,7 +196,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
                                     </span>
                                     <span
                                         className={[
-                                            "text-[10px] font-semibold leading-none",
+                                            "text-[9px] sm:text-[10px] font-semibold leading-tight text-center px-0.5 line-clamp-2 max-w-full",
                                             isActive && isCrisis
                                                 ? "text-destructive"
                                                 : isActive
@@ -267,7 +274,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </div>
                 </header>
 
-                <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+                <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">{children}</main>
             </div>
 
             <MobileBottomNav pathname={pathname} />

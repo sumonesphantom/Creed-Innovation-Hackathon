@@ -1,27 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import {
   AlertTriangle, BookOpen, FileText, Umbrella,
   Lightbulb, ChevronRight, HelpCircle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { AppShell } from "@/components/app-shell";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-// ─── Readiness Score Ring ─────────────────────────────────────────────────
+type Breakdown = {
+  savings: number;
+  insurance: number;
+  documents: number;
+  awareness: number;
+};
 
-const SCORE = 62;
-
-const BREAKDOWN = [
-  { label: "Savings", value: 15, max: 25 },
-  { label: "Insurance", value: 8, max: 25 },
-  { label: "Documents", value: 22, max: 25 },
-  { label: "Awareness", value: 17, max: 25 },
-] as const;
-
-const SCORE_WHY: Record<(typeof BREAKDOWN)[number]["label"], string> = {
+const SCORE_WHY: Record<"Savings" | "Insurance" | "Documents" | "Awareness", string> = {
   Savings:
     "Points from your answer about covering a $500 surprise: yes is strongest, maybe is partial, no is lowest.",
   Insurance:
@@ -39,20 +38,27 @@ function scoreColor(pct: number) {
   return "oklch(0.55 0.17 150)";
 }
 
-function scoreLabel(pct: number) {
-  if (pct < 30) return "At Risk";
-  if (pct < 55) return "Developing";
-  if (pct < 75) return "Building";
+function scoreLabel(score: number) {
+  if (score < 30) return "At Risk";
+  if (score < 55) return "Developing";
+  if (score < 75) return "Building";
   return "Resilient";
 }
 
-function ReadinessRing() {
+function ReadinessRing({ score, breakdown }: { score: number; breakdown: Breakdown }) {
   const radius = 80;
   const stroke = 10;
   const r = radius - stroke / 2;
   const circumference = 2 * Math.PI * r;
-  const offset = circumference - (SCORE / 100) * circumference;
-  const color = scoreColor(SCORE);
+  const offset = circumference - (score / 100) * circumference;
+  const color = scoreColor(score);
+
+  const rows = [
+    { label: "Savings" as const, value: breakdown.savings, max: 25 },
+    { label: "Insurance" as const, value: breakdown.insurance, max: 25 },
+    { label: "Documents" as const, value: breakdown.documents, max: 25 },
+    { label: "Awareness" as const, value: breakdown.awareness, max: 25 },
+  ];
 
   return (
     <div className="flex flex-col items-center gap-6 w-full">
@@ -71,16 +77,16 @@ function ReadinessRing() {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-5xl font-extrabold leading-none tabular-nums" style={{ color }}>
-            {SCORE}
+            {score}
           </span>
           <span className="text-xs font-bold uppercase tracking-widest mt-1" style={{ color }}>
-            {scoreLabel(SCORE)}
+            {scoreLabel(score)}
           </span>
         </div>
       </div>
 
       <div className="w-full flex flex-col gap-3">
-        {BREAKDOWN.map(({ label, value, max }) => {
+        {rows.map(({ label, value, max }) => {
           const pct = Math.round((value / max) * 100);
           const barColor = scoreColor(pct);
           return (
@@ -120,8 +126,6 @@ function ReadinessRing() {
   );
 }
 
-// ─── Crisis CTA ───────────────────────────────────────────────────────────
-
 function CrisisCTA() {
   return (
     <Link href="/crisis" className="block w-full group rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive">
@@ -139,8 +143,6 @@ function CrisisCTA() {
   );
 }
 
-// ─── Action Items ─────────────────────────────────────────────────────────
-
 const ACTIONS = [
   {
     icon: Umbrella,
@@ -154,7 +156,7 @@ const ACTIONS = [
     icon: FileText,
     label: "Upload key documents",
     sub: "ID, lease, insurance cards",
-    href: "/my-data",
+    href: "/vault",
     iconBg: "bg-[oklch(0.52_0.17_150/0.1)]",
     iconColor: "text-[oklch(0.52_0.17_150)]",
   },
@@ -202,16 +204,98 @@ function ActionItems() {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────
+function ScoreCardSkeleton() {
+  return (
+    <div className="space-y-6 w-full animate-pulse">
+      <div className="flex justify-center">
+        <div className="w-40 h-40 rounded-full bg-muted" />
+      </div>
+      <div className="space-y-3 w-full">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="space-y-2">
+            <div className="h-3 bg-muted rounded w-1/3" />
+            <div className="h-2 bg-muted rounded-full w-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useUser();
   const firstName = user?.name?.split(" ")[0];
+  const [status, setStatus] = useState<"loading" | "error" | "no-profile" | "ready">("loading");
+  const [score, setScore] = useState(0);
+  const [breakdown, setBreakdown] = useState<Breakdown>({
+    savings: 0,
+    insurance: 0,
+    documents: 0,
+    awareness: 0,
+  });
+
+  const loadScore = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const deviceId = localStorage.getItem("shockplan_device_id") || "";
+    if (!deviceId) {
+      setStatus("no-profile");
+      return;
+    }
+    setStatus("loading");
+    const hasUsedBudget = localStorage.getItem("shockplan_used_budget") === "1";
+    try {
+      const res = await fetch("/api/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deviceId,
+          hasUsedBudget,
+          hasCompletedCrisisFlow: false,
+          hasVisitedBenefits: false,
+        }),
+      });
+      if (res.status === 404) {
+        setStatus("no-profile");
+        return;
+      }
+      if (!res.ok) {
+        setStatus("error");
+        return;
+      }
+      const data = (await res.json()) as {
+        score?: number;
+        breakdown?: Breakdown;
+      };
+      setScore(typeof data.score === "number" ? data.score : 0);
+      setBreakdown(
+        data.breakdown ?? {
+          savings: 0,
+          insurance: 0,
+          documents: 0,
+          awareness: 0,
+        }
+      );
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadScore();
+  }, [loadScore]);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void loadScore();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [loadScore]);
 
   return (
     <AppShell>
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
-        {/* Greeting */}
         <section className="mb-8">
           <h1 className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
             {firstName ? `Hey, ${firstName}!` : "Hey there!"}
@@ -221,23 +305,46 @@ export default function DashboardPage() {
           </p>
         </section>
 
-        {/* Two-column layout on desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
-          {/* Left column — Score */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="w-full border border-border shadow-sm bg-card rounded-2xl">
               <CardContent className="px-6 py-6">
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-5">
                   Shock Readiness Score
                 </p>
-                <ReadinessRing />
+                {status === "loading" && <ScoreCardSkeleton />}
+                {status === "error" && (
+                  <div className="flex flex-col items-center gap-4 py-8 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      We could not load your score. Check your connection and try again.
+                    </p>
+                    <Button type="button" variant="secondary" className="rounded-xl" onClick={() => void loadScore()}>
+                      Retry
+                    </Button>
+                  </div>
+                )}
+                {status === "no-profile" && (
+                  <div className="flex flex-col items-center gap-4 py-8 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Complete onboarding to see your personalized readiness score.
+                    </p>
+                    <Link
+                      href="/onboarding"
+                      className={cn(buttonVariants(), "rounded-xl")}
+                    >
+                      Start onboarding
+                    </Link>
+                  </div>
+                )}
+                {status === "ready" && (
+                  <ReadinessRing score={score} breakdown={breakdown} />
+                )}
               </CardContent>
             </Card>
 
             <CrisisCTA />
           </div>
 
-          {/* Right column — Actions */}
           <div className="lg:col-span-3">
             <ActionItems />
           </div>

@@ -123,15 +123,15 @@
 - [x] "How ShockPlan Works" section
 
 ### Phase 9: Community Feed Stub (~1 hr)
-- [ ] Anonymous post feed
-- [ ] Filter by crisis type
-- [ ] Upvote + seed posts
+- [x] Anonymous post feed
+- [x] Filter by crisis type
+- [x] Upvote + seed posts
 
 ### Phase 10: Document Vault Stub (~1 hr)
-- [ ] Category tabs + upload
-- [ ] Connect to readiness score
+- [x] Category tabs + upload
+- [x] Connect to readiness score
 
 ### Phase 11: Polish + Demo Prep (~2 hrs)
-- [ ] Responsive mobile check
-- [ ] Loading states + error handling
-- [ ] Demo account + backup recording
+- [x] Responsive mobile check
+- [x] Loading states + error handling
+- [x] Demo account + backup recording

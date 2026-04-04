@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "@/components/session-provider";
@@ -18,6 +18,15 @@ export const metadata: Metadata = {
   title: "ShockPlan — Your Financial Crisis Buddy",
   description:
     "ShockPlan helps underserved families prepare for, navigate, and recover from financial shocks with AI-powered guidance, budgeting tools, and insurance education.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c0e12" },
+  ],
 };
 
 export default function RootLayout({
