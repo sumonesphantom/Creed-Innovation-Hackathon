@@ -1,0 +1,17 @@
+flowchart LR
+    Root["Job Loss"] --> Decision{"Your main\nstrategy"}
+    Decision -->|Stable| A["Cut costs +\ngig work\n+$900 / -$200"]
+    Decision -->|Risky| B["Retrain or\npivot careers\n-$400 / -$350"]
+    Decision -->|Crisis| C["Rely on savings\n$0 / $0"]
+    A --> E1["New job\n(user event)"]
+    E1 --> E2["Move apartments\n(user event)"]
+    E2 --> Add(["+ Add event"])
+
+    style Root fill:#fff,stroke:#1A1A1A
+    style Decision fill:#fff,stroke:#888,stroke-dasharray:5 5
+    style A fill:#F5F5F5,stroke:#C8C8C8
+    style B fill:#F0F0F0,stroke:#666
+    style C fill:#1A1A1A,stroke:#1A1A1A,color:#fff
+    style E1 fill:#FEFAE8,stroke:#F5C518
+    style E2 fill:#FEFAE8,stroke:#F5C518
+    style Add fill:#fff,stroke:#C8C8C8,stroke-dasharray:5 5

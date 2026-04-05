@@ -1,0 +1,32 @@
+graph TB
+    subgraph Client["Browser"]
+        UI["React 19 + Tailwind v4 + shadcn/ui"]
+        RF["React Flow - visual planner"]
+        SIO_C["Socket.io Client"]
+    end
+
+    subgraph Server["Next.js 16 Custom Server"]
+        API["API Routes - App Router"]
+        SIO_S["Socket.io Server"]
+        LC["LangChain"]
+    end
+
+    subgraph External["External Services"]
+        Mongo[("MongoDB Atlas")]
+        Pine[("Pinecone\nRAG + Memory")]
+        Gemini["Google Gemini"]
+        Auth["Auth0"]
+    end
+
+    UI --> API
+    RF --> API
+    SIO_C <-->|real-time chat| SIO_S
+    API --> Mongo
+    API --> Auth
+    SIO_S --> LC
+    LC --> Gemini
+    LC --> Pine
+
+    style Client fill:#fff,stroke:#1A1A1A
+    style Server fill:#F5F5F5,stroke:#1A1A1A
+    style External fill:#FEFAE8,stroke:#F5C518

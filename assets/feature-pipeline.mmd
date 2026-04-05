@@ -1,0 +1,12 @@
+flowchart LR
+    A["Crisis Playbooks\n(What happened?)"] -->|Plan my recovery| C["Flow of Life\n(What's my plan?)"]
+    A -->|Crisis budget| B["Emergency Budget\n(What can I afford?)"]
+    B -->|Budget context| D["AI Buddy\n(Help me decide)"]
+    C -->|Plan context| D
+    C -->|Budget impact| B
+    D -->|Advice| C
+
+    style A fill:#1A1A1A,stroke:#F5C518,color:#fff
+    style B fill:#1A1A1A,stroke:#F5C518,color:#fff
+    style C fill:#1A1A1A,stroke:#F5C518,color:#fff
+    style D fill:#F5C518,stroke:#1A1A1A,color:#111
