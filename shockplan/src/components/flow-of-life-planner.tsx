@@ -196,6 +196,7 @@ function createScenarioPayload(name: string, templateId: string, base?: Partial<
     name: name.trim(),
     templateId,
     selections: base?.selections ?? initialSelections(getTemplateById(templateId) ?? LIFE_PATH_TEMPLATES[0]),
+    nodeOverrides: base?.nodeOverrides ?? {},
     customEvents: base?.customEvents ?? [],
     manualMilestones: base?.manualMilestones ?? [],
     generatedMilestoneCompletion: base?.generatedMilestoneCompletion ?? {},
@@ -209,6 +210,7 @@ function scenarioSnapshot(scenario: LifePathScenario) {
     name: scenario.name,
     templateId: scenario.templateId,
     selections: scenario.selections,
+    nodeOverrides: scenario.nodeOverrides,
     customEvents: scenario.customEvents,
     manualMilestones: scenario.manualMilestones,
     generatedMilestoneCompletion: scenario.generatedMilestoneCompletion,
@@ -265,6 +267,10 @@ export function FlowOfLifePlanner({ initialCrisisId }: { initialCrisisId?: strin
   const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [sheetSide, setSheetSide] = useState<"right" | "bottom">("right");
+  const [nodeEditOpen, setNodeEditOpen] = useState(false);
+  const [nodeEditId, setNodeEditId] = useState<string | null>(null);
+  const [nodeEditIncome, setNodeEditIncome] = useState(0);
+  const [nodeEditExpense, setNodeEditExpense] = useState(0);
   const flowRef = useRef<HTMLDivElement>(null);
   const savedSnapshots = useRef<Record<string, string>>({});
 
@@ -283,8 +289,8 @@ export function FlowOfLifePlanner({ initialCrisisId }: { initialCrisisId?: strin
     [activeScenario, template]
   );
   const projection = useMemo(
-    () => buildProjection(pathNodes, activeScenario?.customEvents ?? [], horizonMonths),
-    [activeScenario?.customEvents, horizonMonths, pathNodes]
+    () => buildProjection(pathNodes, activeScenario?.customEvents ?? [], horizonMonths, activeScenario?.nodeOverrides),
+    [activeScenario?.customEvents, activeScenario?.nodeOverrides, horizonMonths, pathNodes]
   );
   const generatedMilestones = useMemo(
     () => generateMilestones(pathNodes, activeScenario?.customEvents ?? []),
@@ -744,11 +750,21 @@ export function FlowOfLifePlanner({ initialCrisisId }: { initialCrisisId?: strin
           }
           customEvents={activeScenario.customEvents}
           selectedCustomEventId={editingEventId ?? undefined}
+          nodeOverrides={activeScenario.nodeOverrides}
           onSelectCustomEvent={(id) => {
             const found = activeScenario.customEvents.find((item) => item.id === id);
             if (found) openEventDraft(found);
           }}
           onAddEvent={() => openEventDraft()}
+          onEditOutcomeNode={(nodeId) => {
+            const def = template.nodes.find((n) => n.id === nodeId);
+            if (!def) return;
+            const override = activeScenario.nodeOverrides?.[nodeId];
+            setNodeEditId(nodeId);
+            setNodeEditIncome(override?.monthlyIncomeDelta ?? def.monthlyIncomeDelta);
+            setNodeEditExpense(override?.monthlyExpenseDelta ?? def.monthlyExpenseDelta);
+            setNodeEditOpen(true);
+          }}
         />
       </div>
 
@@ -1258,6 +1274,74 @@ export function FlowOfLifePlanner({ initialCrisisId }: { initialCrisisId?: strin
             </Button>
             <Button type="button" className="rounded-lg" onClick={saveManualMilestone}>
               Save step
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={nodeEditOpen} onOpenChange={setNodeEditOpen}>
+        <DialogContent showCloseButton className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Customize branch values</DialogTitle>
+            <DialogDescription>
+              Adjust the income and expense impact to match your real situation. These values override the template defaults for this scenario only.
+            </DialogDescription>
+          </DialogHeader>
+          {nodeEditId && (
+            <div className="grid grid-cols-1 gap-4">
+              <p className="text-sm font-semibold text-foreground">
+                {template.nodes.find((n) => n.id === nodeEditId)?.label}
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="node-income">Monthly income delta</Label>
+                <Input id="node-income" type="number" step={100} value={String(nodeEditIncome)} onChange={(e) => setNodeEditIncome(Number(e.target.value || 0))} className="rounded-lg" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="node-expense">Monthly expense delta</Label>
+                <Input id="node-expense" type="number" step={50} value={String(nodeEditExpense)} onChange={(e) => setNodeEditExpense(Number(e.target.value || 0))} className="rounded-lg" />
+              </div>
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-xs text-muted-foreground">Net monthly impact: <span className={`font-semibold ${nodeEditIncome - nodeEditExpense >= 0 ? "text-[#F5C518]" : "text-destructive"}`}>{formatMoney(nodeEditIncome - nodeEditExpense)}</span></p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            {nodeEditId && activeScenario?.nodeOverrides?.[nodeEditId] && (
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-lg"
+                onClick={() => {
+                  updateActiveScenario((scenario) => {
+                    const next = { ...scenario.nodeOverrides };
+                    delete next[nodeEditId!];
+                    return { ...scenario, nodeOverrides: next };
+                  });
+                  setNodeEditOpen(false);
+                }}
+              >
+                Reset to default
+              </Button>
+            )}
+            <Button type="button" variant="outline" className="rounded-lg" onClick={() => setNodeEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="rounded-lg"
+              onClick={() => {
+                if (!nodeEditId) return;
+                updateActiveScenario((scenario) => ({
+                  ...scenario,
+                  nodeOverrides: {
+                    ...scenario.nodeOverrides,
+                    [nodeEditId]: { monthlyIncomeDelta: nodeEditIncome, monthlyExpenseDelta: nodeEditExpense },
+                  },
+                }));
+                setNodeEditOpen(false);
+              }}
+            >
+              Save values
             </Button>
           </DialogFooter>
         </DialogContent>

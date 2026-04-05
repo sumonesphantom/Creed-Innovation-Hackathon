@@ -95,10 +95,18 @@ function MoneyInput({
 }
 
 function ExpenseRow({
-  cat, value, onChange, max = 5000,
-}: { cat: (typeof EXPENSE_CATEGORIES)[number]; value: string; onChange: (v: string) => void; max?: number }) {
+  cat, value, onChange, defaultMax = 5000,
+}: { cat: (typeof EXPENSE_CATEGORIES)[number]; value: string; onChange: (v: string) => void; defaultMax?: number }) {
   const { icon: Icon } = cat;
   const numVal = parseNum(value);
+  const [max, setMax] = useState(defaultMax);
+  const [editingMax, setEditingMax] = useState(false);
+
+  // Auto-expand max if value exceeds it
+  useEffect(() => {
+    if (numVal > max) setMax(Math.ceil(numVal / 1000) * 1000);
+  }, [numVal, max]);
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
@@ -121,9 +129,25 @@ function ExpenseRow({
           onChange={(e) => onChange(e.target.value)}
           className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[#E8E8E8] dark:bg-[#333] accent-[#F5C518]"
         />
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
+        <div className="flex justify-between items-center text-[10px] text-muted-foreground mt-0.5">
           <span>$0</span>
-          <span>{fmt(max)}</span>
+          {editingMax ? (
+            <input
+              type="number"
+              min={100}
+              step={500}
+              value={max}
+              autoFocus
+              onChange={(e) => setMax(Math.max(100, Number(e.target.value) || defaultMax))}
+              onBlur={() => setEditingMax(false)}
+              onKeyDown={(e) => e.key === "Enter" && setEditingMax(false)}
+              className="w-20 h-5 text-[10px] text-right rounded border border-border bg-background px-1 tabular-nums"
+            />
+          ) : (
+            <button type="button" onClick={() => setEditingMax(true)} className="hover:text-foreground tabular-nums transition-colors" title="Click to change max">
+              {fmt(max)} ✎
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -288,7 +312,7 @@ export default function BudgetPage() {
                 {EXPENSE_CATEGORIES.map((cat) => (
                   <ExpenseRow
                     key={cat.key} cat={cat} value={expenses[cat.key]}
-                    max={cat.key === "housing" ? 5000 : cat.key === "food" ? 2000 : cat.key === "medical" ? 3000 : 2000}
+                    defaultMax={cat.key === "housing" ? 5000 : cat.key === "food" ? 2000 : cat.key === "medical" ? 3000 : 2000}
                     onChange={(v) => { markBudgetUsed(); setExpenses((prev) => ({ ...prev, [cat.key]: v })); }}
                   />
                 ))}

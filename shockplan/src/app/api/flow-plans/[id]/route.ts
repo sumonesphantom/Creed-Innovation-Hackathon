@@ -5,6 +5,12 @@ import { getUserIdentifier } from "@/lib/get-user";
 import { FlowPlan } from "@/lib/models";
 import type { LifePathScenario } from "@/types";
 
+function toPlainObject(val: unknown): Record<string, unknown> {
+  if (val instanceof Map) return Object.fromEntries(val.entries());
+  if (typeof val === "object" && val !== null) return val as Record<string, unknown>;
+  return {};
+}
+
 function serializeFlowPlan(doc: {
   _id: mongoose.Types.ObjectId;
   deviceId?: string;
@@ -12,6 +18,7 @@ function serializeFlowPlan(doc: {
   name: string;
   templateId: string;
   selections?: Record<string, number> | Map<string, number>;
+  nodeOverrides?: Record<string, unknown> | Map<string, unknown>;
   customEvents?: unknown[];
   manualMilestones?: unknown[];
   generatedMilestoneCompletion?: Record<string, boolean> | Map<string, boolean>;
@@ -20,20 +27,33 @@ function serializeFlowPlan(doc: {
   createdAt?: Date;
   updatedAt?: Date;
 }): LifePathScenario {
+  const selections =
+    doc.selections instanceof Map ? Object.fromEntries(doc.selections.entries()) : (doc.selections ?? {});
+  const completion =
+    doc.generatedMilestoneCompletion instanceof Map
+      ? Object.fromEntries(doc.generatedMilestoneCompletion.entries())
+      : (doc.generatedMilestoneCompletion ?? {});
+  const rawOverrides = toPlainObject(doc.nodeOverrides);
+  const nodeOverrides: Record<string, { monthlyIncomeDelta: number; monthlyExpenseDelta: number }> = {};
+  for (const [k, v] of Object.entries(rawOverrides)) {
+    const obj = toPlainObject(v);
+    nodeOverrides[k] = {
+      monthlyIncomeDelta: typeof obj.monthlyIncomeDelta === "number" ? obj.monthlyIncomeDelta : 0,
+      monthlyExpenseDelta: typeof obj.monthlyExpenseDelta === "number" ? obj.monthlyExpenseDelta : 0,
+    };
+  }
+
   return {
     id: String(doc._id),
     deviceId: doc.deviceId ?? "",
     userId: doc.userId ?? "",
     name: doc.name,
     templateId: doc.templateId,
-    selections:
-      doc.selections instanceof Map ? Object.fromEntries(doc.selections.entries()) : (doc.selections ?? {}),
+    selections,
+    nodeOverrides,
     customEvents: Array.isArray(doc.customEvents) ? (doc.customEvents as LifePathScenario["customEvents"]) : [],
     manualMilestones: Array.isArray(doc.manualMilestones) ? (doc.manualMilestones as LifePathScenario["manualMilestones"]) : [],
-    generatedMilestoneCompletion:
-      doc.generatedMilestoneCompletion instanceof Map
-        ? Object.fromEntries(doc.generatedMilestoneCompletion.entries())
-        : (doc.generatedMilestoneCompletion ?? {}),
+    generatedMilestoneCompletion: completion,
     notes: doc.notes ?? "",
     zoom: (doc.zoom as LifePathScenario["zoom"]) ?? "year",
     createdAt: (doc.createdAt ?? new Date()).toISOString(),
@@ -46,6 +66,7 @@ function normalizeScenarioBody(body: Record<string, unknown>) {
     name: typeof body.name === "string" ? body.name.trim().slice(0, 120) : "",
     templateId: typeof body.templateId === "string" ? body.templateId.trim() : "",
     selections: typeof body.selections === "object" && body.selections ? (body.selections as Record<string, number>) : {},
+    nodeOverrides: typeof body.nodeOverrides === "object" && body.nodeOverrides ? body.nodeOverrides : {},
     customEvents: Array.isArray(body.customEvents) ? body.customEvents : [],
     manualMilestones: Array.isArray(body.manualMilestones) ? body.manualMilestones : [],
     generatedMilestoneCompletion:

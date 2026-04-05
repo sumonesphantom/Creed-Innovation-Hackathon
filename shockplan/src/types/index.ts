@@ -209,6 +209,11 @@ export interface LifePathManualMilestone {
   done: boolean;
 }
 
+export interface LifePathNodeOverride {
+  monthlyIncomeDelta: number;
+  monthlyExpenseDelta: number;
+}
+
 export interface LifePathScenario {
   id: string;
   deviceId?: string;
@@ -216,6 +221,7 @@ export interface LifePathScenario {
   name: string;
   templateId: string;
   selections: Record<string, number>;
+  nodeOverrides: Record<string, LifePathNodeOverride>;
   customEvents: LifePathCustomEvent[];
   manualMilestones: LifePathManualMilestone[];
   generatedMilestoneCompletion: Record<string, boolean>;

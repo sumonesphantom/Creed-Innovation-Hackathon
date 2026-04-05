@@ -70,6 +70,7 @@ function LifeDecisionNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
 
 function LifeOutcomeNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
   const risk = data.risk ?? "stable";
+  const isActive = !data.dimmed;
   return (
     <div className={`w-[210px] transition-opacity ${data.dimmed ? "opacity-40" : "opacity-100"}`}>
       <Handle type="target" position={Position.Left} className="!bg-[#333333] !w-2 !h-2 !border-0" />
@@ -82,6 +83,7 @@ function LifeOutcomeNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
           </p>
           <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">{RISK_LABEL[risk]}</p>
           <NodeCaption caption={data.caption} />
+          {isActive && <p className="text-[10px] text-[#F5C518] mt-1">Tap to customize values</p>}
         </CardContent>
       </Card>
     </div>
@@ -155,31 +157,35 @@ export interface LifePathReactFlowProps {
   template: LifePathTemplate;
   selections: Record<string, number>;
   setSelections: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  nodeOverrides?: Record<string, { monthlyIncomeDelta: number; monthlyExpenseDelta: number }>;
   customEvents: LifePathCustomEvent[];
   selectedCustomEventId?: string;
   onSelectCustomEvent: (id: string) => void;
   onAddEvent: () => void;
+  onEditOutcomeNode: (nodeId: string) => void;
 }
 
 export function LifePathReactFlow({
   template,
   selections,
   setSelections,
+  nodeOverrides,
   customEvents,
   selectedCustomEventId,
   onSelectCustomEvent,
   onAddEvent,
+  onEditOutcomeNode,
 }: LifePathReactFlowProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<LifePathFlowNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [autoFit, setAutoFit] = useState(true);
 
   useEffect(() => {
-    const built = buildLifePathFlowElements(template, selections, customEvents, selectedCustomEventId);
+    const built = buildLifePathFlowElements(template, selections, customEvents, selectedCustomEventId, nodeOverrides);
     setNodes(built.nodes);
     setEdges(built.edges);
     setAutoFit(true);
-  }, [template, selections, customEvents, selectedCustomEventId, setNodes, setEdges]);
+  }, [template, selections, customEvents, selectedCustomEventId, nodeOverrides, setNodes, setEdges]);
 
   const handleNodeDragStop = useCallback(() => {
     setAutoFit(false);
@@ -206,9 +212,15 @@ export function LifePathReactFlow({
         .sort((a, b) => a.to.localeCompare(b.to));
       const idx = outs.findIndex((e) => e.to === node.id);
       if (idx < 0) return;
+      // If already selected, open edit dialog
+      const currentIdx = selections[parent.id] ?? 0;
+      if (currentIdx === idx) {
+        onEditOutcomeNode(node.id);
+        return;
+      }
       setSelections((s) => ({ ...s, [parent.id]: idx }));
     },
-    [template, setSelections, onSelectCustomEvent, onAddEvent]
+    [template, selections, setSelections, onSelectCustomEvent, onAddEvent, onEditOutcomeNode]
   );
 
   return (

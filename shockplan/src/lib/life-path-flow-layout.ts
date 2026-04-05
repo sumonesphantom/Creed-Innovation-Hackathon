@@ -59,7 +59,8 @@ export function buildLifePathFlowElements(
   template: LifePathTemplate,
   selections: Record<string, number>,
   customEvents: LifePathCustomEvent[],
-  selectedCustomEventId?: string
+  selectedCustomEventId?: string,
+  nodeOverrides?: Record<string, { monthlyIncomeDelta: number; monthlyExpenseDelta: number }>
 ): { nodes: Node<LifePathFlowNodeData>[]; edges: Edge[] } {
   const depthMap = layoutColumns(template);
   const byCol = nodesByDepth(template);
@@ -86,6 +87,7 @@ export function buildLifePathFlowElements(
           ? edgeRiskForChild(template, parent.id, def.id)
           : undefined;
 
+      const override = nodeOverrides?.[def.id];
       nodes.push({
         id: def.id,
         type: rfType,
@@ -96,8 +98,8 @@ export function buildLifePathFlowElements(
           caption: def.summary,
           dimmed: def.type === "outcome" ? !onPath : false,
           risk,
-          income: def.monthlyIncomeDelta,
-          expense: def.monthlyExpenseDelta,
+          income: override?.monthlyIncomeDelta ?? def.monthlyIncomeDelta,
+          expense: override?.monthlyExpenseDelta ?? def.monthlyExpenseDelta,
         },
       });
     });

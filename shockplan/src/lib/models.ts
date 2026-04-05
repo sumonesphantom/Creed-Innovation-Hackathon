@@ -121,6 +121,7 @@ const FlowPlanSchema = new Schema({
   name: { type: String, required: true, maxlength: 120 },
   templateId: { type: String, required: true },
   selections: { type: Map, of: Number, default: {} },
+  nodeOverrides: { type: Map, of: new Schema({ monthlyIncomeDelta: { type: Number, default: 0 }, monthlyExpenseDelta: { type: Number, default: 0 } }, { _id: false }), default: {} },
   customEvents: { type: [FlowPlanCustomEventSchema], default: [] },
   manualMilestones: { type: [FlowPlanManualMilestoneSchema], default: [] },
   generatedMilestoneCompletion: { type: Map, of: Boolean, default: {} },
