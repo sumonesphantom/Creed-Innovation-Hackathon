@@ -77,6 +77,7 @@ function buildBuddySystemPrompt(
     score: ReadinessScore | undefined,
     crisisContext: string | undefined,
     ragContext: string,
+    longTermContext: string,
 ): string {
     let systemPrompt =
         BUDDY_SYSTEM_PROMPT + "\n\n" + buildUserContext(profile, score);
@@ -87,6 +88,10 @@ function buildBuddySystemPrompt(
 
     if (ragContext) {
         systemPrompt += `\n\nRETRIEVED KNOWLEDGE (general education; combine with the user's situation—do not treat as personal advice):\n${ragContext}`;
+    }
+
+    if (longTermContext.trim()) {
+        systemPrompt += `\n\nRELEVANT PAST CONTEXT:\n${longTermContext}`;
     }
 
     return systemPrompt;
@@ -175,6 +180,7 @@ export function createBuddyChatReadableStream(
     score: ReadinessScore | undefined,
     crisisContext: string | undefined,
     history: BaseMessage[],
+    longTermContext: string,
     onAssistantComplete?: (assistantText: string) => void | Promise<void>,
 ): ReadableStream<Uint8Array> {
     const encoder = new TextEncoder();
@@ -198,6 +204,7 @@ export function createBuddyChatReadableStream(
                     score,
                     crisisContext,
                     ragContext,
+                    longTermContext,
                 );
 
                 const model = new ChatGoogleGenerativeAI({
@@ -262,6 +269,7 @@ export async function chatWithBuddy(
         score,
         crisisContext,
         [],
+        "",
     );
     const reader = stream.getReader();
     const decoder = new TextDecoder();

@@ -1,5 +1,3 @@
-import { Auth0Client } from "@auth0/nextjs-auth0/server";
-
 type Auth0ServerModule = typeof import("@auth0/nextjs-auth0/server");
 type Auth0ClientInstance = InstanceType<Auth0ServerModule["Auth0Client"]>;
 
@@ -18,7 +16,3 @@ export async function getAuth0Client(): Promise<Auth0ClientInstance> {
 
     return auth0Promise;
 }
-
-export const auth0 = new Auth0Client({
-    signInReturnToPath: "/dashboard",
-});

@@ -10,7 +10,6 @@ import {
     DollarSign,
     GitBranch,
     Users,
-    Shield,
     Settings,
     Menu,
     X,
@@ -52,7 +51,9 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
     }
 
     return (
-        <div className={`flex items-center gap-2.5 ${collapsed ? "justify-center" : "px-1"}`}>
+        <div
+            className={`flex items-center gap-2.5 ${collapsed ? "justify-center" : "px-1"}`}
+        >
             {user.picture ? (
                 <Image
                     src={user.picture}
@@ -71,8 +72,12 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
             )}
             {!collapsed && (
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+                    <p className="text-xs font-semibold text-foreground truncate">
+                        {user.name}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                        {user.email}
+                    </p>
                 </div>
             )}
             {!collapsed && (
@@ -82,7 +87,9 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
                     title="Sign out"
                     onClick={() => {
                         if (user?.sub) {
-                            localStorage.removeItem(`shockplan_buddy_messages_${user.sub}`);
+                            localStorage.removeItem(
+                                `shockplan_buddy_messages_${user.sub}`,
+                            );
                         }
                     }}
                 >
@@ -93,13 +100,25 @@ function UserSection({ collapsed }: { collapsed?: boolean }) {
     );
 }
 
-function SidebarContent({ pathname, collapsed }: { pathname: string; collapsed?: boolean }) {
+function SidebarContent({
+    pathname,
+    collapsed,
+}: {
+    pathname: string;
+    collapsed?: boolean;
+}) {
     return (
         <>
             {/* Logo */}
             <div className="flex items-center gap-2.5 px-4 py-5">
                 <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#1A1A1A] shadow-md shrink-0">
-                    <Shield className="h-5 w-5 text-[#F5C518]" />
+                    <Image
+                        src="/logo.png"
+                        alt="ShockPlan"
+                        width={28}
+                        height={28}
+                        className="rounded-lg object-contain"
+                    />
                 </div>
                 {!collapsed && (
                     <span className="text-lg font-bold tracking-tight text-foreground">
@@ -275,7 +294,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         </Button>
                         <div className="flex items-center gap-2">
                             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1A1A1A] shadow-sm">
-                                <Shield className="h-4 w-4 text-[#F5C518]" />
+                                <Image
+                                    src="/logo.png"
+                                    alt="ShockPlan"
+                                    width={24}
+                                    height={24}
+                                    className="rounded-md object-contain"
+                                />
                             </div>
                             <span className="text-lg font-bold tracking-tight text-foreground">
                                 ShockPlan
@@ -288,7 +313,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </div>
                 </header>
 
-                <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">{children}</main>
+                <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
+                    {children}
+                </main>
             </div>
 
             <MobileBottomNav pathname={pathname} />

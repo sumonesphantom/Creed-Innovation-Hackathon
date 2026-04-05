@@ -5,46 +5,50 @@ import { SessionProvider } from "@/components/session-provider";
 import "./globals.css";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "ShockPlan — Your Financial Crisis Buddy",
-  description:
-    "ShockPlan helps underserved families prepare for, navigate, and recover from financial shocks with AI-powered guidance, budgeting tools, and insurance education.",
+    title: "ShockPlan — Your Financial Crisis Buddy",
+    description:
+        "ShockPlan helps underserved families prepare for, navigate, and recover from financial shocks with AI-powered guidance, budgeting tools, and insurance education.",
+    icons: {
+        icon: "/logo.png",
+        apple: "/logo.png",
+    },
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c0e12" },
-  ],
+    width: "device-width",
+    initialScale: 1,
+    themeColor: [
+        { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+        { media: "(prefers-color-scheme: dark)", color: "#0c0e12" },
+    ],
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <SessionProvider>
-          <ThemeProvider>{children}</ThemeProvider>
-        </SessionProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html
+            lang="en"
+            suppressHydrationWarning
+            className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        >
+            <body className="min-h-full flex flex-col">
+                <SessionProvider>
+                    <ThemeProvider>{children}</ThemeProvider>
+                </SessionProvider>
+            </body>
+        </html>
+    );
 }
