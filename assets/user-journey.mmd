@@ -1,0 +1,18 @@
+flowchart TD
+    Start(["User opens ShockPlan"]) --> Onboard["Onboarding\nHousehold, income, insurance"]
+    Onboard --> Dashboard["Dashboard\nReadiness score + action items"]
+    Dashboard --> Crisis{"Crisis strikes?"}
+    Crisis -->|Yes| Playbook["Crisis Playbook\n10min / 24hr / 7day actions"]
+    Crisis -->|No| Normal["Normal Budget\nTrack monthly expenses"]
+    Playbook --> EmBudget["Emergency Budget\nPrioritize bills, calc runway"]
+    Playbook --> Flow["Flow of Life\nVisual recovery decision tree"]
+    EmBudget --> Flow
+    Flow --> Buddy["AI Buddy\nPersonalized guidance"]
+    Flow --> Community["Community Board\nCrowdsourced crisis tips"]
+    Buddy --> Flow
+
+    style Start fill:#F5C518,stroke:#1A1A1A,color:#111
+    style Playbook fill:#1A1A1A,stroke:#F5C518,color:#fff
+    style EmBudget fill:#1A1A1A,stroke:#F5C518,color:#fff
+    style Flow fill:#1A1A1A,stroke:#F5C518,color:#fff
+    style Buddy fill:#F5C518,stroke:#1A1A1A,color:#111

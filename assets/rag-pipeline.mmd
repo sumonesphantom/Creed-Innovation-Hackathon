@@ -1,0 +1,11 @@
+flowchart LR
+    Q["User message"] --> Embed["Embed query\nllama-text-embed-v2"]
+    Embed --> Search["Pinecone\nsimilarity search"]
+    Search --> Context["Retrieved chunks\n+ user profile\n+ budget + flow plan"]
+    Context --> LLM["Gemini\nvia LangChain"]
+    LLM --> Stream["Socket.io\nstreamed response"]
+    LLM --> Mem["Memory store\nPinecone"]
+
+    style Q fill:#F5C518,stroke:#1A1A1A,color:#111
+    style LLM fill:#1A1A1A,stroke:#F5C518,color:#fff
+    style Stream fill:#1A1A1A,stroke:#F5C518,color:#fff
