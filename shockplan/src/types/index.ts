@@ -192,6 +192,7 @@ export interface LifePathCustomEvent {
   oneTimeCashDelta: number;
   startMonthOffset: number;
   durationMonths: number;
+  monthsToStability?: number;
   risk: PathRiskLevel;
   notes: string;
 }

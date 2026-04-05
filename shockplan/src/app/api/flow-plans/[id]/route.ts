@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongodb";
 import { getUserIdentifier } from "@/lib/get-user";
 import { FlowPlan } from "@/lib/models";
-import type { LifePathScenario } from "@/types";
+import type { LifePathCustomEvent, LifePathManualMilestone, LifePathScenario } from "@/types";
 
 function serializeFlowPlan(doc: {
   _id: mongoose.Types.ObjectId;
@@ -28,8 +28,8 @@ function serializeFlowPlan(doc: {
     templateId: doc.templateId,
     selections:
       doc.selections instanceof Map ? Object.fromEntries(doc.selections.entries()) : (doc.selections ?? {}),
-    customEvents: Array.isArray(doc.customEvents) ? doc.customEvents : [],
-    manualMilestones: Array.isArray(doc.manualMilestones) ? doc.manualMilestones : [],
+    customEvents: Array.isArray(doc.customEvents) ? (doc.customEvents as LifePathCustomEvent[]) : [],
+    manualMilestones: Array.isArray(doc.manualMilestones) ? (doc.manualMilestones as LifePathManualMilestone[]) : [],
     generatedMilestoneCompletion:
       doc.generatedMilestoneCompletion instanceof Map
         ? Object.fromEntries(doc.generatedMilestoneCompletion.entries())

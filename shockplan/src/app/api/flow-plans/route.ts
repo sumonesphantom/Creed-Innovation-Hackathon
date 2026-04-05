@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongodb";
 import { getUserIdentifier } from "@/lib/get-user";
 import { FlowPlan } from "@/lib/models";
-import type { LifePathScenario } from "@/types";
+import type { LifePathCustomEvent, LifePathManualMilestone, LifePathScenario } from "@/types";
 
 function serializeFlowPlan(doc: {
   _id: mongoose.Types.ObjectId;
@@ -34,8 +34,8 @@ function serializeFlowPlan(doc: {
     name: doc.name,
     templateId: doc.templateId,
     selections,
-    customEvents: Array.isArray(doc.customEvents) ? doc.customEvents : [],
-    manualMilestones: Array.isArray(doc.manualMilestones) ? doc.manualMilestones : [],
+    customEvents: Array.isArray(doc.customEvents) ? (doc.customEvents as LifePathCustomEvent[]) : [],
+    manualMilestones: Array.isArray(doc.manualMilestones) ? (doc.manualMilestones as LifePathManualMilestone[]) : [],
     generatedMilestoneCompletion: completion,
     notes: doc.notes ?? "",
     zoom: (doc.zoom as LifePathScenario["zoom"]) ?? "year",

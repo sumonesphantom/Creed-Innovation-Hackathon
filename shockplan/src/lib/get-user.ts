@@ -1,4 +1,5 @@
-import { auth0 } from "./auth0";
+import type { NextRequest } from "next/server";
+import { getAuth0Client } from "./auth0";
 import { connectToDatabase } from "./mongodb";
 import { User } from "./models";
 
@@ -7,8 +8,11 @@ import { User } from "./models";
  * Returns { userId, deviceId } — userId is set when authenticated,
  * deviceId is the fallback from the request body/params.
  */
-export async function getUserIdentifier(requestDeviceId?: string) {
-  const session = await auth0.getSession();
+export async function getUserIdentifier(requestDeviceId?: string, request?: Request) {
+  const auth0 = await getAuth0Client();
+  const session = request
+    ? await auth0.getSession(request as NextRequest)
+    : await auth0.getSession();
 
   if (session?.user?.email) {
     await connectToDatabase();

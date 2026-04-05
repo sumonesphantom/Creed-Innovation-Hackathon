@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    serverExternalPackages: [
+        "@pinecone-database/pinecone",
+        "@langchain/pinecone",
+        "@langchain/google-genai",
+        "langchain",
+        "socket.io",
+        "socket.io-client",
+    ],
     images: {
         remotePatterns: [
             {

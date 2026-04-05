@@ -293,6 +293,17 @@ export function buildProjection(
   };
 }
 
+export function accumulatePathMetrics(pathNodes: LifePathNodeDef[], horizonMonths: number) {
+  const { summary } = buildProjection(pathNodes, [], horizonMonths);
+  return {
+    monthlyIncomeDelta: summary.currentMonthlyIncomeDelta,
+    monthlyExpenseDelta: summary.currentMonthlyExpenseDelta,
+    netMonthly: summary.currentNetMonthly,
+    stabilityMonths: summary.stabilityMonths,
+    projectedSwing: summary.projectedSwing,
+  };
+}
+
 export function generateMilestones(
   pathNodes: LifePathNodeDef[],
   customEvents: LifePathCustomEvent[]

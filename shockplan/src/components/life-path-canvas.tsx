@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { toPng } from "html-to-image";
 import { cn } from "@/lib/utils";
@@ -65,13 +65,10 @@ export function LifePathCanvas() {
 
   const [zoom, setZoom] = useState<TimeZoom>("year");
   const [extraEvents, setExtraEvents] = useState<LifePathExtraEvent[]>([]);
+  const [selectedCustomEventId, setSelectedCustomEventId] = useState<string | undefined>();
   const [exporting, setExporting] = useState(false);
 
   const flowRef = useRef<HTMLDivElement>(null);
-
-  const onRemoveExtra = useCallback((id: string) => {
-    setExtraEvents((p) => p.filter((x) => x.id !== id));
-  }, []);
 
   useEffect(() => {
     setSelections(initialSelections(template));
@@ -88,7 +85,7 @@ export function LifePathCanvas() {
       label: e.label,
       monthlyIncomeDelta: e.monthlyIncomeDelta,
       monthlyExpenseDelta: e.monthlyExpenseDelta,
-      monthsToStability: e.monthsToStability,
+      monthsToStability: e.monthsToStability ?? e.durationMonths,
     }));
     return [...base, ...extras];
   }, [template, selections, extraEvents]);
@@ -128,10 +125,15 @@ export function LifePathCanvas() {
       {
         id,
         label: ev.label,
+        category: "other",
         monthlyIncomeDelta: ev.monthlyIncomeDelta,
         monthlyExpenseDelta: ev.monthlyExpenseDelta,
+        oneTimeCashDelta: 0,
+        startMonthOffset: 0,
+        durationMonths: Math.max(1, Math.abs(ev.monthsToStability)),
         monthsToStability: ev.monthsToStability,
         risk: ev.risk,
+        notes: "",
       },
     ]);
   }
@@ -223,8 +225,9 @@ export function LifePathCanvas() {
           template={template}
           selections={selections}
           setSelections={setSelections}
-          extraEvents={extraEvents}
-          onRemoveExtra={onRemoveExtra}
+          customEvents={extraEvents}
+          selectedCustomEventId={selectedCustomEventId}
+          onSelectCustomEvent={setSelectedCustomEventId}
         />
       </div>
 
