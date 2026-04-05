@@ -100,6 +100,7 @@ const FlowPlanCustomEventSchema = new Schema(
     status: { type: String, default: "not_started" },
     targetDate: { type: String, default: "" },
     notes: { type: String, default: "" },
+    attachedNodeId: { type: String, default: "" },
   },
   { _id: false }
 );

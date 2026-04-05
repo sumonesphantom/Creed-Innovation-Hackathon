@@ -14,6 +14,7 @@ import {
   useReactFlow,
   Handle,
   Position,
+  type Connection,
   type Node,
   type NodeProps,
   type Edge,
@@ -96,7 +97,7 @@ function LifeExtraNode({ data }: NodeProps<Node<LifePathFlowNodeData>>) {
   return (
     <div className="w-[210px]">
       <Handle type="target" position={Position.Left} className="!bg-[#333333] !w-2 !h-2 !border-0" />
-      <Handle type="source" position={Position.Right} className="!w-2 !h-2 !border-0 opacity-0 pointer-events-none !bg-[#333333]" />
+      <Handle type="source" position={Position.Right} className="!bg-[#333333] !w-2 !h-2 !border-0" />
       <Card className={`border shadow-[0_1px_4px_rgba(0,0,0,0.05)] transition-shadow ${RISK_BG_CLASS[risk]} ${data.selected ? "ring-2 ring-primary shadow-md" : ""}`}>
         <CardContent className="p-3 flex flex-col gap-1">
           <div className="flex items-center justify-between gap-2">
@@ -163,6 +164,7 @@ export interface LifePathReactFlowProps {
   onSelectCustomEvent: (id: string) => void;
   onAddEvent: () => void;
   onEditOutcomeNode: (nodeId: string) => void;
+  onLinkEvent: (eventId: string, sourceNodeId: string) => void;
 }
 
 export function LifePathReactFlow({
@@ -175,21 +177,49 @@ export function LifePathReactFlow({
   onSelectCustomEvent,
   onAddEvent,
   onEditOutcomeNode,
+  onLinkEvent,
 }: LifePathReactFlowProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<LifePathFlowNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [autoFit, setAutoFit] = useState(true);
+  const [prevTemplateId, setPrevTemplateId] = useState(template.id);
 
   useEffect(() => {
     const built = buildLifePathFlowElements(template, selections, customEvents, selectedCustomEventId, nodeOverrides);
-    setNodes(built.nodes);
+
+    // Only auto-fit when template changes (not on every data update)
+    const templateChanged = template.id !== prevTemplateId;
+    if (templateChanged) setPrevTemplateId(template.id);
+
+    setNodes((currentNodes) => {
+      if (templateChanged || currentNodes.length === 0) return built.nodes;
+      // Merge: keep existing positions for nodes that were already present,
+      // use layout positions only for new nodes
+      const posMap = new Map(currentNodes.map((n) => [n.id, n.position]));
+      return built.nodes.map((n) => {
+        const existing = posMap.get(n.id);
+        return existing ? { ...n, position: existing } : n;
+      });
+    });
     setEdges(built.edges);
-    setAutoFit(true);
-  }, [template, selections, customEvents, selectedCustomEventId, nodeOverrides, setNodes, setEdges]);
+    if (templateChanged) setAutoFit(true);
+  }, [template, selections, customEvents, selectedCustomEventId, nodeOverrides, setNodes, setEdges, prevTemplateId]);
 
   const handleNodeDragStop = useCallback(() => {
     setAutoFit(false);
   }, []);
+
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return;
+      // Only allow linking TO an event node (lifeExtra) or between events
+      const targetIsEvent = customEvents.some((e) => e.id === connection.target);
+      if (targetIsEvent) {
+        onLinkEvent(connection.target, connection.source);
+      }
+    },
+    [customEvents, onLinkEvent]
+  );
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -233,9 +263,10 @@ export function LifePathReactFlow({
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
           onNodeDragStop={handleNodeDragStop}
+          onConnect={handleConnect}
           nodeTypes={nodeTypes}
           nodesDraggable={true}
-          nodesConnectable={false}
+          nodesConnectable={true}
           elementsSelectable={true}
           panOnScroll
           zoomOnScroll
@@ -256,7 +287,12 @@ export function LifePathReactFlow({
         {!autoFit && (
           <button
             type="button"
-            onClick={() => setAutoFit(true)}
+            onClick={() => {
+              // Reset positions to layout defaults
+              const built = buildLifePathFlowElements(template, selections, customEvents, selectedCustomEventId, nodeOverrides);
+              setNodes(built.nodes);
+              setAutoFit(true);
+            }}
             className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#1A1A1A] text-white hover:bg-[#333] dark:bg-white dark:text-[#1A1A1A] dark:hover:bg-gray-200 shadow-md transition-colors"
           >
             Reset view
