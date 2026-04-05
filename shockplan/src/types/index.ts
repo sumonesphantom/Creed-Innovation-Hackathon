@@ -135,6 +135,7 @@ export interface BudgetCalculationResult {
 }
 
 export type PathRiskLevel = "stable" | "risky" | "crisis";
+export type EventStatus = "not_started" | "in_progress" | "done" | "abandoned" | "paused";
 export type LifePathZoom = "month" | "year" | "fiveYear";
 export type LifePathEventCategory =
   | "income"
@@ -194,6 +195,8 @@ export interface LifePathCustomEvent {
   durationMonths: number;
   monthsToStability?: number;
   risk: PathRiskLevel;
+  status: EventStatus;
+  targetDate: string;
   notes: string;
 }
 
@@ -207,6 +210,11 @@ export interface LifePathManualMilestone {
   done: boolean;
 }
 
+export interface LifePathNodeOverride {
+  monthlyIncomeDelta: number;
+  monthlyExpenseDelta: number;
+}
+
 export interface LifePathScenario {
   id: string;
   deviceId?: string;
@@ -214,6 +222,7 @@ export interface LifePathScenario {
   name: string;
   templateId: string;
   selections: Record<string, number>;
+  nodeOverrides: Record<string, LifePathNodeOverride>;
   customEvents: LifePathCustomEvent[];
   manualMilestones: LifePathManualMilestone[];
   generatedMilestoneCompletion: Record<string, boolean>;

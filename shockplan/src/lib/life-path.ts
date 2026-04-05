@@ -1,4 +1,5 @@
 import type {
+  EventStatus,
   GeneratedLifePathMilestone,
   LifePathCustomEvent,
   LifePathMilestonePhase,
@@ -50,6 +51,30 @@ export const RISK_LABEL: Record<PathRiskLevel, string> = {
   risky: "Risky",
   crisis: "Crisis",
 };
+
+export const EVENT_STATUS_LABEL: Record<EventStatus, string> = {
+  not_started: "Not Started",
+  in_progress: "In Progress",
+  done: "Done",
+  abandoned: "Abandoned",
+  paused: "Paused",
+};
+
+export const EVENT_STATUS_COLOR: Record<EventStatus, string> = {
+  not_started: "bg-[#C8C8C8] text-[#111111]",
+  in_progress: "bg-[#F5C518] text-[#111111]",
+  done: "bg-[#1A1A1A] text-white",
+  abandoned: "bg-[#666666] text-white",
+  paused: "bg-[#E8E8E8] text-[#111111]",
+};
+
+export const EVENT_STATUSES: EventStatus[] = [
+  "not_started",
+  "in_progress",
+  "done",
+  "abandoned",
+  "paused",
+];
 
 const CUSTOM_EVENT_MILESTONES: Record<
   LifePathCustomEvent["category"],
@@ -220,11 +245,12 @@ export function getPathThroughTemplate(
 export function buildProjection(
   pathNodes: LifePathNodeDef[],
   customEvents: LifePathCustomEvent[],
-  horizonMonths: number
+  horizonMonths: number,
+  nodeOverrides?: Record<string, { monthlyIncomeDelta: number; monthlyExpenseDelta: number }>
 ): { months: LifePathProjectionMonth[]; summary: LifePathProjectionSummary } {
   const recurringNodes = pathNodes.filter((node) => node.type === "outcome");
-  const baseIncome = recurringNodes.reduce((sum, node) => sum + node.monthlyIncomeDelta, 0);
-  const baseExpense = recurringNodes.reduce((sum, node) => sum + node.monthlyExpenseDelta, 0);
+  const baseIncome = recurringNodes.reduce((sum, node) => sum + (nodeOverrides?.[node.id]?.monthlyIncomeDelta ?? node.monthlyIncomeDelta), 0);
+  const baseExpense = recurringNodes.reduce((sum, node) => sum + (nodeOverrides?.[node.id]?.monthlyExpenseDelta ?? node.monthlyExpenseDelta), 0);
   const stabilityMonths = recurringNodes.reduce((sum, node) => sum + node.monthsToStability, 0);
 
   const months: LifePathProjectionMonth[] = [];
@@ -383,7 +409,7 @@ export function buildBuddyContext(
       ? customEvents
           .map(
             (event) =>
-              `${event.label} (${EVENT_CATEGORY_LABEL[event.category]}, starts month ${event.startMonthOffset + 1}, lasts ${event.durationMonths} months, ${RISK_LABEL[event.risk]})`
+              `${event.label} (${EVENT_CATEGORY_LABEL[event.category]}, starts month ${event.startMonthOffset + 1}, lasts ${event.durationMonths} months, ${RISK_LABEL[event.risk]}, status: ${EVENT_STATUS_LABEL[event.status]}${event.targetDate ? `, target: ${event.targetDate}` : ""})`
           )
           .join("; ")
       : "None";

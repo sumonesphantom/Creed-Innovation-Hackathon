@@ -5,9 +5,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toPng } from "html-to-image";
 import {
+  AlertTriangle,
+  ArrowRight,
   ChevronDown,
   ChevronUp,
   Copy,
+  DollarSign,
   Download,
   GitBranch,
   Loader2,
@@ -27,6 +30,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
   EVENT_CATEGORY_LABEL,
+  EVENT_STATUSES,
+  EVENT_STATUS_COLOR,
+  EVENT_STATUS_LABEL,
   PHASE_LABEL,
   RISK_LABEL,
   ZOOM_TO_MONTHS,
@@ -37,8 +43,9 @@ import {
   getTopRisks,
   initialSelections,
 } from "@/lib/life-path";
-import { LIFE_PATH_TEMPLATES, getTemplateById } from "@/lib/life-path-templates";
+import { CRISIS_TO_TEMPLATE, LIFE_PATH_TEMPLATES, getTemplateById } from "@/lib/life-path-templates";
 import type {
+  EventStatus,
   LifePathCustomEvent,
   LifePathEventCategory,
   LifePathManualMilestone,
@@ -168,6 +175,8 @@ function createEventDraft(source?: Partial<LifePathCustomEvent>): LifePathCustom
     startMonthOffset: source?.startMonthOffset ?? 0,
     durationMonths: source?.durationMonths ?? 6,
     risk: source?.risk ?? "stable",
+    status: source?.status ?? "not_started",
+    targetDate: source?.targetDate ?? "",
     notes: source?.notes ?? "",
   };
 }
@@ -187,6 +196,7 @@ function createScenarioPayload(name: string, templateId: string, base?: Partial<
     name: name.trim(),
     templateId,
     selections: base?.selections ?? initialSelections(getTemplateById(templateId) ?? LIFE_PATH_TEMPLATES[0]),
+    nodeOverrides: base?.nodeOverrides ?? {},
     customEvents: base?.customEvents ?? [],
     manualMilestones: base?.manualMilestones ?? [],
     generatedMilestoneCompletion: base?.generatedMilestoneCompletion ?? {},
@@ -200,6 +210,7 @@ function scenarioSnapshot(scenario: LifePathScenario) {
     name: scenario.name,
     templateId: scenario.templateId,
     selections: scenario.selections,
+    nodeOverrides: scenario.nodeOverrides,
     customEvents: scenario.customEvents,
     manualMilestones: scenario.manualMilestones,
     generatedMilestoneCompletion: scenario.generatedMilestoneCompletion,
@@ -238,7 +249,7 @@ function SectionTitle({ title, description, action }: { title: string; descripti
   );
 }
 
-export function FlowOfLifePlanner() {
+export function FlowOfLifePlanner({ initialCrisisId }: { initialCrisisId?: string } = {}) {
   const [deviceId, setDeviceId] = useState("");
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -256,6 +267,10 @@ export function FlowOfLifePlanner() {
   const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [sheetSide, setSheetSide] = useState<"right" | "bottom">("right");
+  const [nodeEditOpen, setNodeEditOpen] = useState(false);
+  const [nodeEditId, setNodeEditId] = useState<string | null>(null);
+  const [nodeEditIncome, setNodeEditIncome] = useState(0);
+  const [nodeEditExpense, setNodeEditExpense] = useState(0);
   const flowRef = useRef<HTMLDivElement>(null);
   const savedSnapshots = useRef<Record<string, string>>({});
 
@@ -274,8 +289,8 @@ export function FlowOfLifePlanner() {
     [activeScenario, template]
   );
   const projection = useMemo(
-    () => buildProjection(pathNodes, activeScenario?.customEvents ?? [], horizonMonths),
-    [activeScenario?.customEvents, horizonMonths, pathNodes]
+    () => buildProjection(pathNodes, activeScenario?.customEvents ?? [], horizonMonths, activeScenario?.nodeOverrides),
+    [activeScenario?.customEvents, activeScenario?.nodeOverrides, horizonMonths, pathNodes]
   );
   const generatedMilestones = useMemo(
     () => generateMilestones(pathNodes, activeScenario?.customEvents ?? []),
@@ -327,13 +342,30 @@ export function FlowOfLifePlanner() {
     const resolvedDeviceId = getOrCreateDeviceId();
     setDeviceId(resolvedDeviceId);
 
+    const crisisTemplateId = initialCrisisId ? CRISIS_TO_TEMPLATE[initialCrisisId] : undefined;
+
     const load = async () => {
       try {
         const response = await fetch(`/api/flow-plans?deviceId=${encodeURIComponent(resolvedDeviceId)}`);
         if (!response.ok) throw new Error("load");
         const data = (await response.json()) as { items?: LifePathScenario[] };
         const items = data.items ?? [];
-        if (items.length === 0) {
+
+        if (crisisTemplateId) {
+          const existing = items.find((item) => item.templateId === crisisTemplateId);
+          if (existing) {
+            setScenarios(items);
+            items.forEach((item) => { savedSnapshots.current[item.id] = scenarioSnapshot(item); });
+            setActiveScenarioId(existing.id);
+          } else {
+            const tpl = getTemplateById(crisisTemplateId) ?? LIFE_PATH_TEMPLATES[0];
+            const created = await createScenarioOnServer(tpl.title, crisisTemplateId, resolvedDeviceId);
+            const all = [created, ...items];
+            all.forEach((item) => { savedSnapshots.current[item.id] = scenarioSnapshot(item); });
+            setScenarios(all);
+            setActiveScenarioId(created.id);
+          }
+        } else if (items.length === 0) {
           const created = await createScenarioOnServer("Scenario 1", LIFE_PATH_TEMPLATES[0].id, resolvedDeviceId);
           setScenarios([created]);
           setActiveScenarioId(created.id);
@@ -627,6 +659,37 @@ export function FlowOfLifePlanner() {
         </CardContent>
       </Card>
 
+      {/* ── Financial Wellness Pipeline ── */}
+      <Card className="border border-[#F5C518]/30 rounded-[10px] bg-[#FEFAE8] dark:bg-[#F5C518]/5 shadow-none">
+        <CardContent className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#111111] dark:text-[#F5C518] mb-3">Financial Wellness Pipeline</p>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <Link href="/crisis" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1A1A1A] text-white font-semibold hover:bg-[#333] transition-colors">
+              <AlertTriangle className="h-3 w-3" />
+              Crisis
+            </Link>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F5C518] text-[#111111] font-semibold">
+              <GitBranch className="h-3 w-3" />
+              Flow Plan
+            </span>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <Link href="/budget" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-foreground font-semibold hover:bg-muted transition-colors">
+              <DollarSign className="h-3 w-3" />
+              Budget
+            </Link>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <Link href="/buddy" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-foreground font-semibold hover:bg-muted transition-colors">
+              <MessageCircle className="h-3 w-3" />
+              AI Buddy
+            </Link>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+            Identify a crisis → map recovery paths here → build a budget around your chosen path → talk it through with your AI Buddy.
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-wrap items-center gap-2">
         {(["month", "year", "fiveYear"] as const).map((value) => (
           <Button
@@ -687,12 +750,77 @@ export function FlowOfLifePlanner() {
           }
           customEvents={activeScenario.customEvents}
           selectedCustomEventId={editingEventId ?? undefined}
+          nodeOverrides={activeScenario.nodeOverrides}
           onSelectCustomEvent={(id) => {
             const found = activeScenario.customEvents.find((item) => item.id === id);
             if (found) openEventDraft(found);
           }}
+          onAddEvent={() => openEventDraft()}
+          onEditOutcomeNode={(nodeId) => {
+            const def = template.nodes.find((n) => n.id === nodeId);
+            if (!def) return;
+            const override = activeScenario.nodeOverrides?.[nodeId];
+            setNodeEditId(nodeId);
+            setNodeEditIncome(override?.monthlyIncomeDelta ?? def.monthlyIncomeDelta);
+            setNodeEditExpense(override?.monthlyExpenseDelta ?? def.monthlyExpenseDelta);
+            setNodeEditOpen(true);
+          }}
         />
       </div>
+
+      {/* ── Budget Impact Summary ── */}
+      <Card className="border border-border rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+        <CardContent className="p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-medium text-foreground tracking-tight">Budget impact</h2>
+              <p className="text-sm text-muted-foreground mt-1">How this flow plan affects your monthly finances.</p>
+            </div>
+            <Link
+              href="/budget"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg gap-2 inline-flex")}
+            >
+              <DollarSign className="h-4 w-4" />
+              Open Budget Tool
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+            <div className="rounded-[10px] border border-border bg-background p-3">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Monthly income change</p>
+              <p className={`text-lg font-light tabular-nums ${projection.summary.currentMonthlyIncomeDelta >= 0 ? "text-foreground" : "text-destructive"}`}>
+                {projection.summary.currentMonthlyIncomeDelta >= 0 ? "+" : ""}{formatMoney(projection.summary.currentMonthlyIncomeDelta)}
+              </p>
+            </div>
+            <div className="rounded-[10px] border border-border bg-background p-3">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Monthly expense change</p>
+              <p className={`text-lg font-light tabular-nums ${projection.summary.currentMonthlyExpenseDelta <= 0 ? "text-foreground" : "text-destructive"}`}>
+                {projection.summary.currentMonthlyExpenseDelta > 0 ? "+" : ""}{formatMoney(projection.summary.currentMonthlyExpenseDelta)}
+              </p>
+            </div>
+            <div className="rounded-[10px] border border-border bg-background p-3">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Net monthly impact</p>
+              <p className={`text-lg font-light tabular-nums ${projection.summary.currentNetMonthly >= 0 ? "text-[#F5C518]" : "text-destructive"}`}>
+                {projection.summary.currentNetMonthly >= 0 ? "+" : ""}{formatMoney(projection.summary.currentNetMonthly)}
+              </p>
+            </div>
+            <div className="rounded-[10px] border border-border bg-background p-3">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{horizonMonths}-month swing</p>
+              <p className={`text-lg font-light tabular-nums ${projection.summary.projectedSwing >= 0 ? "text-foreground" : "text-destructive"}`}>
+                {projection.summary.projectedSwing >= 0 ? "+" : ""}{formatMoney(projection.summary.projectedSwing)}
+              </p>
+            </div>
+          </div>
+          {activeScenario.customEvents.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {activeScenario.customEvents.map((event) => (
+                <span key={event.id} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${EVENT_STATUS_COLOR[event.status]}`}>
+                  {event.label}: {EVENT_STATUS_LABEL[event.status]}
+                </span>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
         <Card className="border border-border rounded-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
@@ -801,13 +929,21 @@ export function FlowOfLifePlanner() {
                       className="text-left rounded-[10px] border border-border bg-background px-4 py-3 hover:bg-muted/50 transition-colors"
                       onClick={() => openEventDraft(event)}
                     >
-                      <p className="font-semibold text-foreground">{event.label}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-semibold text-foreground">{event.label}</p>
+                        <span className={`shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${EVENT_STATUS_COLOR[event.status]}`}>
+                          {EVENT_STATUS_LABEL[event.status]}
+                        </span>
+                      </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {EVENT_CATEGORY_LABEL[event.category]} | starts month {event.startMonthOffset + 1} | {event.durationMonths} months | {RISK_LABEL[event.risk]}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatMoney(event.monthlyIncomeDelta)} income | {formatMoney(event.monthlyExpenseDelta)} expense | {formatMoney(event.oneTimeCashDelta)} one-time
                       </p>
+                      {event.targetDate ? (
+                        <p className="text-xs text-muted-foreground mt-1">Target: {event.targetDate}</p>
+                      ) : null}
                     </button>
                   ))}
                 </div>
@@ -960,6 +1096,33 @@ export function FlowOfLifePlanner() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label htmlFor="event-status">Status</Label>
+                <select
+                  id="event-status"
+                  value={eventDraft.status}
+                  onChange={(event) => setEventDraft((current) => ({ ...current, status: event.target.value as EventStatus }))}
+                  className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+                >
+                  {EVENT_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {EVENT_STATUS_LABEL[s]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="event-target-date">Target completion date</Label>
+                <Input
+                  id="event-target-date"
+                  type="date"
+                  value={eventDraft.targetDate}
+                  onChange={(event) => setEventDraft((current) => ({ ...current, targetDate: event.target.value }))}
+                  className="rounded-lg"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label htmlFor="event-start">Start month</Label>
                 <Input id="event-start" type="number" min={1} value={String(eventDraft.startMonthOffset + 1)} onChange={(event) => setEventDraft((current) => ({ ...current, startMonthOffset: Math.max(0, Number(event.target.value || 1) - 1) }))} className="rounded-lg" />
               </div>
@@ -968,18 +1131,34 @@ export function FlowOfLifePlanner() {
                 <Input id="event-duration" type="number" min={1} value={String(eventDraft.durationMonths)} onChange={(event) => setEventDraft((current) => ({ ...current, durationMonths: Math.max(1, Number(event.target.value || 1)) }))} className="rounded-lg" />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="event-income">Income delta / mo</Label>
-                <Input id="event-income" type="number" value={String(eventDraft.monthlyIncomeDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, monthlyIncomeDelta: Number(event.target.value || 0) }))} className="rounded-lg" />
+                <Input id="event-income" type="number" step={500} value={String(eventDraft.monthlyIncomeDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, monthlyIncomeDelta: Number(event.target.value || 0) }))} className="rounded-lg" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="event-expense">Expense delta / mo</Label>
-                <Input id="event-expense" type="number" value={String(eventDraft.monthlyExpenseDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, monthlyExpenseDelta: Number(event.target.value || 0) }))} className="rounded-lg" />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="event-expense">Expense delta / mo</Label>
+                  <span className="text-sm font-semibold tabular-nums text-foreground">{formatMoney(eventDraft.monthlyExpenseDelta)}</span>
+                </div>
+                <input
+                  id="event-expense-slider"
+                  type="range"
+                  min={0}
+                  max={10000}
+                  step={50}
+                  value={eventDraft.monthlyExpenseDelta}
+                  onChange={(event) => setEventDraft((current) => ({ ...current, monthlyExpenseDelta: Number(event.target.value) }))}
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[#E8E8E8] accent-[#F5C518]"
+                />
+                <div className="flex justify-between text-[10px] text-muted-foreground">
+                  <span>$0</span>
+                  <span>$10,000</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="event-one-time">One-time cash delta</Label>
-                <Input id="event-one-time" type="number" value={String(eventDraft.oneTimeCashDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, oneTimeCashDelta: Number(event.target.value || 0) }))} className="rounded-lg" />
+                <Input id="event-one-time" type="number" step={500} value={String(eventDraft.oneTimeCashDelta)} onChange={(event) => setEventDraft((current) => ({ ...current, oneTimeCashDelta: Number(event.target.value || 0) }))} className="rounded-lg" />
               </div>
             </div>
             <div className="space-y-2">
@@ -1095,6 +1274,74 @@ export function FlowOfLifePlanner() {
             </Button>
             <Button type="button" className="rounded-lg" onClick={saveManualMilestone}>
               Save step
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={nodeEditOpen} onOpenChange={setNodeEditOpen}>
+        <DialogContent showCloseButton className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Customize branch values</DialogTitle>
+            <DialogDescription>
+              Adjust the income and expense impact to match your real situation. These values override the template defaults for this scenario only.
+            </DialogDescription>
+          </DialogHeader>
+          {nodeEditId && (
+            <div className="grid grid-cols-1 gap-4">
+              <p className="text-sm font-semibold text-foreground">
+                {template.nodes.find((n) => n.id === nodeEditId)?.label}
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="node-income">Monthly income delta</Label>
+                <Input id="node-income" type="number" step={100} value={String(nodeEditIncome)} onChange={(e) => setNodeEditIncome(Number(e.target.value || 0))} className="rounded-lg" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="node-expense">Monthly expense delta</Label>
+                <Input id="node-expense" type="number" step={50} value={String(nodeEditExpense)} onChange={(e) => setNodeEditExpense(Number(e.target.value || 0))} className="rounded-lg" />
+              </div>
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-xs text-muted-foreground">Net monthly impact: <span className={`font-semibold ${nodeEditIncome - nodeEditExpense >= 0 ? "text-[#F5C518]" : "text-destructive"}`}>{formatMoney(nodeEditIncome - nodeEditExpense)}</span></p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            {nodeEditId && activeScenario?.nodeOverrides?.[nodeEditId] && (
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-lg"
+                onClick={() => {
+                  updateActiveScenario((scenario) => {
+                    const next = { ...scenario.nodeOverrides };
+                    delete next[nodeEditId!];
+                    return { ...scenario, nodeOverrides: next };
+                  });
+                  setNodeEditOpen(false);
+                }}
+              >
+                Reset to default
+              </Button>
+            )}
+            <Button type="button" variant="outline" className="rounded-lg" onClick={() => setNodeEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="rounded-lg"
+              onClick={() => {
+                if (!nodeEditId) return;
+                updateActiveScenario((scenario) => ({
+                  ...scenario,
+                  nodeOverrides: {
+                    ...scenario.nodeOverrides,
+                    [nodeEditId]: { monthlyIncomeDelta: nodeEditIncome, monthlyExpenseDelta: nodeEditExpense },
+                  },
+                }));
+                setNodeEditOpen(false);
+              }}
+            >
+              Save values
             </Button>
           </DialogFooter>
         </DialogContent>

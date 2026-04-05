@@ -95,16 +95,60 @@ function MoneyInput({
 }
 
 function ExpenseRow({
-  cat, value, onChange,
-}: { cat: (typeof EXPENSE_CATEGORIES)[number]; value: string; onChange: (v: string) => void }) {
+  cat, value, onChange, defaultMax = 5000,
+}: { cat: (typeof EXPENSE_CATEGORIES)[number]; value: string; onChange: (v: string) => void; defaultMax?: number }) {
   const { icon: Icon } = cat;
+  const numVal = parseNum(value);
+  const [max, setMax] = useState(defaultMax);
+  const [editingMax, setEditingMax] = useState(false);
+
+  // Auto-expand max if value exceeds it
+  useEffect(() => {
+    if (numVal > max) setMax(Math.ceil(numVal / 1000) * 1000);
+  }, [numVal, max]);
+
   return (
-    <div className="flex items-center gap-3">
-      <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${cat.iconBg}`}>
-        <Icon className={`h-3.5 w-3.5 ${cat.iconColor}`} />
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-3">
+        <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${cat.iconBg}`}>
+          <Icon className={`h-3.5 w-3.5 ${cat.iconColor}`} />
+        </div>
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-3">
+          <Label htmlFor={`expense-${cat.key}`} className="text-xs font-semibold text-muted-foreground">{cat.label}</Label>
+          <span className="text-sm font-semibold tabular-nums text-foreground">{fmt(numVal)}</span>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <MoneyInput id={`expense-${cat.key}`} label={cat.label} value={value} onChange={onChange} />
+      <div className="ml-11">
+        <input
+          id={`expense-slider-${cat.key}`}
+          type="range"
+          min={0}
+          max={max}
+          step={25}
+          value={numVal}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[#E8E8E8] dark:bg-[#333] accent-[#F5C518]"
+        />
+        <div className="flex justify-between items-center text-[10px] text-muted-foreground mt-0.5">
+          <span>$0</span>
+          {editingMax ? (
+            <input
+              type="number"
+              min={100}
+              step={500}
+              value={max}
+              autoFocus
+              onChange={(e) => setMax(Math.max(100, Number(e.target.value) || defaultMax))}
+              onBlur={() => setEditingMax(false)}
+              onKeyDown={(e) => e.key === "Enter" && setEditingMax(false)}
+              className="w-20 h-5 text-[10px] text-right rounded border border-border bg-background px-1 tabular-nums"
+            />
+          ) : (
+            <button type="button" onClick={() => setEditingMax(true)} className="hover:text-foreground tabular-nums transition-colors" title="Click to change max">
+              {fmt(max)} ✎
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -268,6 +312,7 @@ export default function BudgetPage() {
                 {EXPENSE_CATEGORIES.map((cat) => (
                   <ExpenseRow
                     key={cat.key} cat={cat} value={expenses[cat.key]}
+                    defaultMax={cat.key === "housing" ? 5000 : cat.key === "food" ? 2000 : cat.key === "medical" ? 3000 : 2000}
                     onChange={(v) => { markBudgetUsed(); setExpenses((prev) => ({ ...prev, [cat.key]: v })); }}
                   />
                 ))}

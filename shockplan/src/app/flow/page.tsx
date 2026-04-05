@@ -1,10 +1,15 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { GitBranch } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { FlowOfLifePlanner } from "@/components/flow-of-life-planner";
 
-export default function FlowPage() {
+function FlowContent() {
+  const searchParams = useSearchParams();
+  const crisisId = searchParams.get("crisis") ?? undefined;
+
   return (
     <AppShell>
       <div className="w-full max-w-6xl mx-auto px-6 lg:px-8 pt-6 lg:pt-10 pb-8">
@@ -23,8 +28,16 @@ export default function FlowPage() {
           </p>
         </section>
 
-        <FlowOfLifePlanner />
+        <FlowOfLifePlanner initialCrisisId={crisisId} />
       </div>
     </AppShell>
+  );
+}
+
+export default function FlowPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
+      <FlowContent />
+    </Suspense>
   );
 }

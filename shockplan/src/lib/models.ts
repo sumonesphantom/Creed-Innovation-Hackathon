@@ -55,6 +55,14 @@ const CommunityPostSchema = new Schema({
   state: { type: String, default: "" },
   content: { type: String, required: true, maxlength: 500 },
   upvotes: { type: Number, default: 0 },
+  commentCount: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const CommunityCommentSchema = new Schema({
+  postId: { type: Schema.Types.ObjectId, required: true, index: true, ref: "CommunityPost" },
+  content: { type: String, required: true, maxlength: 500 },
+  upvotes: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -89,6 +97,8 @@ const FlowPlanCustomEventSchema = new Schema(
     startMonthOffset: { type: Number, default: 0 },
     durationMonths: { type: Number, default: 1 },
     risk: { type: String, default: "stable" },
+    status: { type: String, default: "not_started" },
+    targetDate: { type: String, default: "" },
     notes: { type: String, default: "" },
   },
   { _id: false }
@@ -111,6 +121,7 @@ const FlowPlanSchema = new Schema({
   name: { type: String, required: true, maxlength: 120 },
   templateId: { type: String, required: true },
   selections: { type: Map, of: Number, default: {} },
+  nodeOverrides: { type: Map, of: new Schema({ monthlyIncomeDelta: { type: Number, default: 0 }, monthlyExpenseDelta: { type: Number, default: 0 } }, { _id: false }), default: {} },
   customEvents: { type: [FlowPlanCustomEventSchema], default: [] },
   manualMilestones: { type: [FlowPlanManualMilestoneSchema], default: [] },
   generatedMilestoneCompletion: { type: Map, of: Boolean, default: {} },
@@ -132,6 +143,8 @@ export const Score =
   mongoose.models.Score || mongoose.model("Score", ScoreSchema);
 export const CommunityPostModel =
   mongoose.models.CommunityPost || mongoose.model("CommunityPost", CommunityPostSchema);
+export const CommunityCommentModel =
+  mongoose.models.CommunityComment || mongoose.model("CommunityComment", CommunityCommentSchema);
 export const BuddyChat =
   mongoose.models.BuddyChat || mongoose.model("BuddyChat", BuddyChatSchema);
 export const FlowPlan =
