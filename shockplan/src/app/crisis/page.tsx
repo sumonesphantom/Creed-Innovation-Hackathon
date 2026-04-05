@@ -6,6 +6,7 @@ import {
   Briefcase, Heart, Car, Home, CloudLightning,
   ChevronLeft, ChevronRight, MessageCircle, CheckCircle2,
   Clock, CalendarRange, Zap, AlertTriangle,
+  GitBranch, DollarSign,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 
@@ -374,18 +375,40 @@ function TimelineTriage({ crisis, onBack }: { crisis: CrisisType; onBack: () => 
         })}
       </ol>
 
-      {/* ── Talk to Buddy CTA ── */}
-      <Link href="/buddy" className="block w-full mt-1">
-        <div className="flex items-center justify-center gap-2 w-full px-5 py-3 rounded-[10px]
-                        bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]
-                        hover:bg-[#333] dark:hover:bg-gray-100
-                        transition-colors font-semibold text-sm">
-          <MessageCircle className="h-4 w-4" />
-          Talk to my Buddy about {crisis.label.toLowerCase()}
+      {/* ── Action CTAs ── */}
+      <div className="flex flex-col gap-2 mt-1">
+        <Link href="/buddy" className="block w-full">
+          <div className="flex items-center justify-center gap-2 w-full px-5 py-3 rounded-[10px]
+                          bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]
+                          hover:bg-[#333] dark:hover:bg-gray-100
+                          transition-colors font-semibold text-sm">
+            <MessageCircle className="h-4 w-4" />
+            Talk to my Buddy about {crisis.label.toLowerCase()}
+          </div>
+        </Link>
+        <div className="grid grid-cols-2 gap-2">
+          <Link href={`/flow?crisis=${crisis.id}`} className="block w-full">
+            <div className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-[10px]
+                            bg-[#F5C518] text-[#111111]
+                            hover:bg-[#F5C518]/90
+                            transition-colors font-semibold text-sm">
+              <GitBranch className="h-4 w-4" />
+              Plan my recovery
+            </div>
+          </Link>
+          <Link href="/budget" className="block w-full">
+            <div className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-[10px]
+                            border border-border bg-card text-foreground
+                            hover:bg-muted
+                            transition-colors font-semibold text-sm">
+              <DollarSign className="h-4 w-4" />
+              Crisis budget
+            </div>
+          </Link>
         </div>
-      </Link>
-      <p className="text-center text-xs text-muted-foreground -mt-1 pb-1">
-        Your Buddy can walk you through each step in plain language.
+      </div>
+      <p className="text-center text-xs text-muted-foreground pb-1">
+        Use these tools together for a complete financial recovery plan.
       </p>
 
     </div>

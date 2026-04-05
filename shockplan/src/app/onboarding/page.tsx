@@ -127,73 +127,73 @@ export default function OnboardingPage() {
         <Progress value={progressPercent} className="h-2" />
       </header>
 
-      {/* Content — centered card on desktop */}
-      <main className="flex flex-1 flex-col items-center px-4 sm:px-6 lg:px-8 py-4">
-        <div className="w-full max-w-3xl">
-          {step === 0 && <WelcomeStep userName={user?.name} />}
-          {step === 1 && (
-            <SelectStep
-              title="Who's in your household?"
-              why="We use this to tailor advice for your family size."
-              options={HOUSEHOLD_TYPES}
-              value={profile.household}
-              onSelect={(v) => update("household", v)}
-            />
-          )}
-          {step === 2 && (
-            <SelectStep
-              title="Where do you live?"
-              why="This helps us show the right insurance info."
-              options={HOUSING_TYPES}
-              value={profile.housing}
-              onSelect={(v) => update("housing", v)}
-            />
-          )}
-          {step === 3 && (
-            <SelectStep
-              title="How do you earn?"
-              why="We adjust budget tools for your income type."
-              options={INCOME_TYPES}
-              value={profile.incomeType}
-              onSelect={(v) => update("incomeType", v)}
-            />
-          )}
-          {step === 4 && (
-            <InsuranceStep selected={profile.insurance} onToggle={toggleInsurance} />
-          )}
-          {step === 5 && (
-            <StateStep value={profile.state} onSelect={(v) => update("state", v)} />
-          )}
-          {step === 6 && (
-            <ComfortStep value={profile.canCover500} onSelect={(v) => update("canCover500", v)} />
-          )}
+      {/* Content + Navigation together so buttons stay near content */}
+      <main className="flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full max-w-3xl flex flex-col gap-8">
+          <div>
+            {step === 0 && <WelcomeStep userName={user?.name} />}
+            {step === 1 && (
+              <SelectStep
+                title="Who's in your household?"
+                why="We use this to tailor advice for your family size."
+                options={HOUSEHOLD_TYPES}
+                value={profile.household}
+                onSelect={(v) => update("household", v)}
+              />
+            )}
+            {step === 2 && (
+              <SelectStep
+                title="Where do you live?"
+                why="This helps us show the right insurance info."
+                options={HOUSING_TYPES}
+                value={profile.housing}
+                onSelect={(v) => update("housing", v)}
+              />
+            )}
+            {step === 3 && (
+              <SelectStep
+                title="How do you earn?"
+                why="We adjust budget tools for your income type."
+                options={INCOME_TYPES}
+                value={profile.incomeType}
+                onSelect={(v) => update("incomeType", v)}
+              />
+            )}
+            {step === 4 && (
+              <InsuranceStep selected={profile.insurance} onToggle={toggleInsurance} />
+            )}
+            {step === 5 && (
+              <StateStep value={profile.state} onSelect={(v) => update("state", v)} />
+            )}
+            {step === 6 && (
+              <ComfortStep value={profile.canCover500} onSelect={(v) => update("canCover500", v)} />
+            )}
+          </div>
+
+          {/* Navigation — directly below content */}
+          <div className="flex gap-3">
+            {step > 0 && (
+              <Button variant="outline" onClick={prev} className="flex-1">
+                <ChevronLeft className="h-4 w-4 mr-1" /> Back
+              </Button>
+            )}
+            {step < TOTAL_STEPS - 1 ? (
+              <Button onClick={next} className="flex-1">
+                {step === 0 ? "Let's Go" : "Next"} <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : (
+              <Button onClick={saveProfile} disabled={saving} className="flex-1">
+                {saving ? "Saving..." : "See My Dashboard"}
+              </Button>
+            )}
+            {step > 0 && step < TOTAL_STEPS - 1 && (
+              <Button variant="ghost" onClick={next} className="text-muted-foreground text-sm">
+                Skip
+              </Button>
+            )}
+          </div>
         </div>
       </main>
-
-      {/* Navigation */}
-      <div className="px-4 sm:px-6 lg:px-8 py-4 max-w-3xl mx-auto w-full">
-        <div className="flex gap-3">
-          {step > 0 && (
-            <Button variant="outline" onClick={prev} className="flex-1">
-              <ChevronLeft className="h-4 w-4 mr-1" /> Back
-            </Button>
-          )}
-          {step < TOTAL_STEPS - 1 ? (
-            <Button onClick={next} className="flex-1">
-              {step === 0 ? "Let's Go" : "Next"} <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          ) : (
-            <Button onClick={saveProfile} disabled={saving} className="flex-1">
-              {saving ? "Saving..." : "See My Dashboard"}
-            </Button>
-          )}
-          {step > 0 && step < TOTAL_STEPS - 1 && (
-            <Button variant="ghost" onClick={next} className="text-muted-foreground text-sm">
-              Skip
-            </Button>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

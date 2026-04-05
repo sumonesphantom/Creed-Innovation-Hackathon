@@ -135,6 +135,7 @@ export interface BudgetCalculationResult {
 }
 
 export type PathRiskLevel = "stable" | "risky" | "crisis";
+export type EventStatus = "not_started" | "in_progress" | "done" | "abandoned" | "paused";
 export type LifePathZoom = "month" | "year" | "fiveYear";
 export type LifePathEventCategory =
   | "income"
@@ -193,6 +194,8 @@ export interface LifePathCustomEvent {
   startMonthOffset: number;
   durationMonths: number;
   risk: PathRiskLevel;
+  status: EventStatus;
+  targetDate: string;
   notes: string;
 }
 

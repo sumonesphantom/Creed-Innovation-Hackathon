@@ -97,6 +97,8 @@ const FlowPlanCustomEventSchema = new Schema(
     startMonthOffset: { type: Number, default: 0 },
     durationMonths: { type: Number, default: 1 },
     risk: { type: String, default: "stable" },
+    status: { type: String, default: "not_started" },
+    targetDate: { type: String, default: "" },
     notes: { type: String, default: "" },
   },
   { _id: false }

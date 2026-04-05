@@ -1,6 +1,6 @@
 import type { Edge, Node } from "@xyflow/react";
 import { edgeRiskForChild, getPathThroughTemplate, layoutColumns, nodesByDepth } from "@/lib/life-path";
-import type { LifePathCustomEvent, LifePathNodeDef, LifePathTemplate, PathRiskLevel } from "@/types";
+import type { EventStatus, LifePathCustomEvent, LifePathNodeDef, LifePathTemplate, PathRiskLevel } from "@/types";
 
 export type LifePathFlowNodeData = {
   kind: string;
@@ -11,6 +11,8 @@ export type LifePathFlowNodeData = {
   risk?: PathRiskLevel;
   income?: number;
   expense?: number;
+  status?: EventStatus;
+  targetDate?: string;
 };
 
 const COL_GAP = 280;
@@ -141,6 +143,8 @@ export function buildLifePathFlowElements(
         income: event.monthlyIncomeDelta,
         expense: event.monthlyExpenseDelta,
         selected: selectedCustomEventId === event.id,
+        status: event.status,
+        targetDate: event.targetDate,
       },
     });
 
@@ -160,6 +164,43 @@ export function buildLifePathFlowElements(
       });
     }
   });
+
+  // Add a "+" node at the end of the chain for adding new events
+  const lastNodeId = customEvents.length > 0
+    ? customEvents[customEvents.length - 1].id
+    : leaf?.id;
+  const addNodeX = customEvents.length > 0
+    ? attachX
+    : (leafNode ? leafNode.position.x + COL_GAP : PAD_X + COL_GAP);
+  const addNodeY = customEvents.length > 0
+    ? attachY + customEvents.length * ROW_GAP
+    : attachY;
+
+  nodes.push({
+    id: "__add_event__",
+    type: "lifeAddEvent",
+    position: { x: addNodeX, y: addNodeY },
+    data: {
+      kind: "addEvent",
+      label: "Add event",
+    },
+  });
+
+  if (lastNodeId) {
+    edges.push({
+      id: `add-edge-${lastNodeId}`,
+      source: lastNodeId,
+      target: "__add_event__",
+      type: "smoothstep",
+      animated: false,
+      style: {
+        stroke: "#C8C8C8",
+        strokeWidth: 2,
+        strokeDasharray: "6 4",
+        opacity: 0.5,
+      },
+    });
+  }
 
   return { nodes, edges };
 }
