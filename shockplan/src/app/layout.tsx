@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     description:
         "ShockPlan helps underserved families prepare for, navigate, and recover from financial shocks with AI-powered guidance, budgeting tools, and insurance education.",
     icons: {
-        icon: "/logo.png",
+        icon: "/favicon.ico",
         apple: "/logo.png",
     },
 };
