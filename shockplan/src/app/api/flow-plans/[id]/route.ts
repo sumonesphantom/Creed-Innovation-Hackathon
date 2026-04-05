@@ -3,11 +3,7 @@ import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongodb";
 import { getUserIdentifier } from "@/lib/get-user";
 import { FlowPlan } from "@/lib/models";
-import type {
-    LifePathCustomEvent,
-    LifePathManualMilestone,
-    LifePathScenario,
-} from "@/types";
+import type { LifePathScenario } from "@/types";
 
 function toPlainObject(val: unknown): Record<string, unknown> {
     if (val instanceof Map) return Object.fromEntries(val.entries());
@@ -67,20 +63,6 @@ function serializeFlowPlan(doc: {
         userId: doc.userId ?? "",
         name: doc.name,
         templateId: doc.templateId,
-        selections:
-            doc.selections instanceof Map
-                ? Object.fromEntries(doc.selections.entries())
-                : (doc.selections ?? {}),
-        customEvents: Array.isArray(doc.customEvents)
-            ? (doc.customEvents as LifePathCustomEvent[])
-            : [],
-        manualMilestones: Array.isArray(doc.manualMilestones)
-            ? (doc.manualMilestones as LifePathManualMilestone[])
-            : [],
-        generatedMilestoneCompletion:
-            doc.generatedMilestoneCompletion instanceof Map
-                ? Object.fromEntries(doc.generatedMilestoneCompletion.entries())
-                : (doc.generatedMilestoneCompletion ?? {}),
         selections,
         nodeOverrides,
         customEvents: Array.isArray(doc.customEvents)

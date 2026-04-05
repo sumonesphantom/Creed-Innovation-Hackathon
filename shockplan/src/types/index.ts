@@ -198,6 +198,7 @@ export interface LifePathCustomEvent {
   status: EventStatus;
   targetDate: string;
   notes: string;
+  attachedNodeId?: string;
 }
 
 export type LifePathExtraEvent = LifePathCustomEvent;

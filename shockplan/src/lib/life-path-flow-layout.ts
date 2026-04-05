@@ -123,13 +123,11 @@ export function buildLifePathFlowElements(
 
   const path = getPathThroughTemplate(template, selections);
   const leaf = path[path.length - 1];
-  let attachX = PAD_X;
-  let attachY = PAD_Y;
-  const leafNode = nodes.find((n) => n.id === leaf?.id);
-  if (leafNode) {
-    attachX = leafNode.position.x + COL_GAP;
-    attachY = leafNode.position.y;
-  }
+
+  // Anchor events at a fixed column after ALL template columns.
+  const eventCol = maxD + 1;
+  const attachX = PAD_X + eventCol * COL_GAP;
+  const attachY = PAD_Y;
 
   customEvents.forEach((event, i) => {
     const y = attachY + i * ROW_GAP;
@@ -150,10 +148,16 @@ export function buildLifePathFlowElements(
       },
     });
 
-    const fromId = i === 0 ? leaf?.id : customEvents[i - 1].id;
+    // First event in each group connects to the branch node it was created on.
+    // Falls back to current leaf if attachedNodeId not set (legacy events).
+    const attachId = event.attachedNodeId || leaf?.id;
+    const prevEvent = i > 0 ? customEvents[i - 1] : null;
+    const sameGroup = prevEvent && (prevEvent.attachedNodeId || leaf?.id) === attachId;
+    const fromId = sameGroup ? prevEvent.id : attachId;
+
     if (fromId) {
       edges.push({
-        id: `extra-edge-${fromId}-${event.id}`,
+        id: `extra-edge-${event.id}`,
         source: fromId,
         target: event.id,
         type: "smoothstep",
@@ -167,13 +171,11 @@ export function buildLifePathFlowElements(
     }
   });
 
-  // Add a "+" node at the end of the chain for adding new events
+  // Add a "+" node — connects from the current branch leaf
   const lastNodeId = customEvents.length > 0
     ? customEvents[customEvents.length - 1].id
     : leaf?.id;
-  const addNodeX = customEvents.length > 0
-    ? attachX
-    : (leafNode ? leafNode.position.x + COL_GAP : PAD_X + COL_GAP);
+  const addNodeX = attachX;
   const addNodeY = customEvents.length > 0
     ? attachY + customEvents.length * ROW_GAP
     : attachY;
@@ -190,7 +192,7 @@ export function buildLifePathFlowElements(
 
   if (lastNodeId) {
     edges.push({
-      id: `add-edge-${lastNodeId}`,
+      id: "add-edge",
       source: lastNodeId,
       target: "__add_event__",
       type: "smoothstep",

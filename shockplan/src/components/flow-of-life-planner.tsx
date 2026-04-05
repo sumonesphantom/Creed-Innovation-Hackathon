@@ -496,10 +496,13 @@ export function FlowOfLifePlanner({ initialCrisisId }: { initialCrisisId?: strin
   function saveEventDraft() {
     if (!eventDraft.label.trim()) return;
     updateActiveScenario((scenario) => {
-      const customEvents = editingEventId
-        ? scenario.customEvents.map((item) => (item.id === editingEventId ? eventDraft : item))
-        : [...scenario.customEvents, eventDraft];
-      return { ...scenario, customEvents };
+      if (editingEventId) {
+        return { ...scenario, customEvents: scenario.customEvents.map((item) => (item.id === editingEventId ? eventDraft : item)) };
+      }
+      // Stamp new events with the current branch leaf so they stay connected to it
+      const leaf = pathNodes[pathNodes.length - 1];
+      const stamped = { ...eventDraft, attachedNodeId: eventDraft.attachedNodeId || leaf?.id };
+      return { ...scenario, customEvents: [...scenario.customEvents, stamped] };
     });
     setEventSheetOpen(false);
     setEditingEventId(null);
@@ -764,6 +767,14 @@ export function FlowOfLifePlanner({ initialCrisisId }: { initialCrisisId?: strin
             setNodeEditIncome(override?.monthlyIncomeDelta ?? def.monthlyIncomeDelta);
             setNodeEditExpense(override?.monthlyExpenseDelta ?? def.monthlyExpenseDelta);
             setNodeEditOpen(true);
+          }}
+          onLinkEvent={(eventId, sourceNodeId) => {
+            updateActiveScenario((scenario) => ({
+              ...scenario,
+              customEvents: scenario.customEvents.map((ev) =>
+                ev.id === eventId ? { ...ev, attachedNodeId: sourceNodeId } : ev
+              ),
+            }));
           }}
         />
       </div>
