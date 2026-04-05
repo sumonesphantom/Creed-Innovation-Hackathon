@@ -55,6 +55,14 @@ const CommunityPostSchema = new Schema({
   state: { type: String, default: "" },
   content: { type: String, required: true, maxlength: 500 },
   upvotes: { type: Number, default: 0 },
+  commentCount: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const CommunityCommentSchema = new Schema({
+  postId: { type: Schema.Types.ObjectId, required: true, index: true, ref: "CommunityPost" },
+  content: { type: String, required: true, maxlength: 500 },
+  upvotes: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -132,6 +140,8 @@ export const Score =
   mongoose.models.Score || mongoose.model("Score", ScoreSchema);
 export const CommunityPostModel =
   mongoose.models.CommunityPost || mongoose.model("CommunityPost", CommunityPostSchema);
+export const CommunityCommentModel =
+  mongoose.models.CommunityComment || mongoose.model("CommunityComment", CommunityCommentSchema);
 export const BuddyChat =
   mongoose.models.BuddyChat || mongoose.model("BuddyChat", BuddyChatSchema);
 export const FlowPlan =
