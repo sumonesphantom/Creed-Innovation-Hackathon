@@ -54,7 +54,7 @@ const CATEGORY_DOT: Record<ExpenseKey, string> = {
 };
 
 const TIPS = [
-  { icon: Scissors,     iconBg: "bg-gray-100 dark:bg-gray-800/50",    iconColor: "text-gray-600 dark:text-gray-400",   title: "Cut the subscriptions you forget",      body: "Most households have 3–5 unused subscriptions. Canceling even two can free up $30–$60 a month toward your emergency fund." },
+  { icon: Scissors,     iconBg: "bg-gray-100 dark:bg-gray-800/50",    iconColor: "text-gray-600 dark:text-gray-400",   title: "Cut the subscriptions you forget",      body: "Most households have 3–5 unused subscriptions. Canceling even two can free up $30–$60 a month toward your savings goals." },
   { icon: ShoppingCart, iconBg: "bg-green-100 dark:bg-green-900/30",  iconColor: "text-green-600 dark:text-green-400", title: "Shop with a list and eat before you go", body: "Impulse grocery spending adds up fast. A written list and a full stomach can cut your food bill by 15–20% each month." },
   { icon: PiggyBank,    iconBg: "bg-[#FEFAE8] dark:bg-yellow-900/20", iconColor: "text-[#B8940E] dark:text-yellow-400", title: "Save automatically on payday",           body: "Set up a $10–$25 automatic transfer the day you get paid. Saving before you spend means you never have to think about it." },
 ];
@@ -127,7 +127,10 @@ function ExpenseRow({
           step={25}
           value={numVal}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[#E8E8E8] dark:bg-[#333] accent-[#F5C518]"
+          className="w-full h-2 rounded-full appearance-none cursor-pointer accent-[#F5C518]"
+          style={{
+            background: `linear-gradient(to right, #F5C518 0%, #F5C518 ${(numVal / max) * 100}%, var(--slider-track, #E8E8E8) ${(numVal / max) * 100}%, var(--slider-track, #E8E8E8) 100%)`,
+          }}
         />
         <div className="flex justify-between items-center text-[10px] text-muted-foreground mt-0.5">
           <span>$0</span>
@@ -249,11 +252,11 @@ export default function BudgetPage() {
                   <DollarSign className="h-4 w-4 text-[#F5C518]" />
                 </div>
                 <h1 className="text-3xl lg:text-4xl font-light text-foreground tracking-tight">
-                  Emergency Budget
+                  Budget
                 </h1>
               </div>
               <p className="text-sm text-muted-foreground mt-1 ml-12">
-                See where your money goes and how much you need to stay resilient.
+                Track your income and expenses, set savings goals, and plan for whatever comes next.
               </p>
             </div>
             <button
@@ -400,7 +403,7 @@ export default function BudgetPage() {
                 {/* Fund goals */}
                 <div className="flex flex-col gap-1.5">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs text-muted-foreground">3-month emergency fund</span>
+                    <span className="text-xs text-muted-foreground">3-month savings fund</span>
                     <span className="text-sm font-semibold text-foreground tabular-nums">{fmt(threeMonth)}</span>
                   </div>
                   <div className="flex justify-between items-baseline">
@@ -423,7 +426,7 @@ export default function BudgetPage() {
                 {/* Progress */}
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between text-xs font-medium">
-                    <span className="text-muted-foreground">1-month fund progress</span>
+                    <span className="text-muted-foreground">1-month buffer progress</span>
                     <span className={`tabular-nums font-semibold ${pct >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}>
                       {pct}%
                     </span>

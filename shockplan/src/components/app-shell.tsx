@@ -111,15 +111,13 @@ function SidebarContent({
         <>
             {/* Logo */}
             <div className="flex items-center gap-2.5 px-4 py-5">
-                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#1A1A1A] shadow-md shrink-0">
-                    <Image
-                        src="/logo.png"
-                        alt="ShockPlan"
-                        width={28}
-                        height={28}
-                        className="rounded-lg object-contain"
-                    />
-                </div>
+                <Image
+                    src="/logo.png"
+                    alt="ShockPlan"
+                    width={36}
+                    height={36}
+                    className="rounded-xl object-contain shrink-0"
+                />
                 {!collapsed && (
                     <span className="text-lg font-bold tracking-tight text-foreground">
                         ShockPlan
@@ -293,15 +291,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             <Menu className="h-5 w-5" />
                         </Button>
                         <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1A1A1A] shadow-sm">
-                                <Image
-                                    src="/logo.png"
-                                    alt="ShockPlan"
-                                    width={24}
-                                    height={24}
-                                    className="rounded-md object-contain"
-                                />
-                            </div>
+                            <Image
+                                src="/logo.png"
+                                alt="ShockPlan"
+                                width={32}
+                                height={32}
+                                className="rounded-lg object-contain"
+                            />
                             <span className="text-lg font-bold tracking-tight text-foreground">
                                 ShockPlan
                             </span>
