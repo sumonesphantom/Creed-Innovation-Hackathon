@@ -135,3 +135,16 @@
 - [x] Responsive mobile check
 - [x] Loading states + error handling
 - [x] Demo account + backup recording
+
+### Phase 12: Flow of Life v2 — Financial Wellness Pipeline (DONE)
+- [x] Event status tracking: `not_started`, `in_progress`, `done`, `abandoned`, `paused` per custom event
+- [x] Color-coded status badges on ReactFlow nodes and event cards (yellow = active, dark = done)
+- [x] Target completion date per event with date picker
+- [x] 4 new crisis-linked flow templates: Medical Bills, Eviction, Car Accident, Natural Disaster
+- [x] Crisis → Flow integration: "Plan my recovery" button on crisis page auto-creates flow scenario
+- [x] Crisis → Budget link: "Crisis budget" button on crisis page
+- [x] Financial Wellness Pipeline banner: Crisis → Flow → Budget → AI Buddy visual pipeline
+- [x] Budget Impact card on flow page showing net monthly impact and projected swing
+- [x] AI Buddy context enhanced with event statuses and target dates
+- [x] Monthly expense sliders on custom event editor for intuitive input
+- [x] All styling follows theme.md (monochrome + #F5C518 yellow accent)

@@ -28,8 +28,8 @@ function serializeFlowPlan(doc: {
     templateId: doc.templateId,
     selections:
       doc.selections instanceof Map ? Object.fromEntries(doc.selections.entries()) : (doc.selections ?? {}),
-    customEvents: Array.isArray(doc.customEvents) ? doc.customEvents : [],
-    manualMilestones: Array.isArray(doc.manualMilestones) ? doc.manualMilestones : [],
+    customEvents: Array.isArray(doc.customEvents) ? (doc.customEvents as LifePathScenario["customEvents"]) : [],
+    manualMilestones: Array.isArray(doc.manualMilestones) ? (doc.manualMilestones as LifePathScenario["manualMilestones"]) : [],
     generatedMilestoneCompletion:
       doc.generatedMilestoneCompletion instanceof Map
         ? Object.fromEntries(doc.generatedMilestoneCompletion.entries())
